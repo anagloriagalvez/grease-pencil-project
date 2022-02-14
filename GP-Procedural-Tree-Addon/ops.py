@@ -68,6 +68,21 @@ def apply_custom_vertex_config_leaves(point=None):
     point.pressure = random.uniform(50, 500)
     point.uv_rotation = random.uniform(-1.0, 1.0)
 
+def redraw_gp_tree(self, context):
+    gp_name = context.scene.get("_current_stroke")
+    if gp_name:
+        print("Updating")
+        # TODO: Think more about this! Very risky as we don't know frame, etc.
+        gp_stroke = bpy.context.scene.objects[gp_name].data.layers['Test layer'].frames[0].strokes[0]
+        remove_all_points_from_stroke(stroke=gp_stroke)
+        draw_gp_line(gp_stroke=gp_stroke, n_points=context.scene.gp_tree.line_length)
+
+def remove_all_points_from_stroke(stroke=None):
+    print("SOMETHING IS HAPPENING")
+    points = stroke.points
+    for i in range(0, len(points)):
+        stroke.points.pop(index=0)
+
 
 # PROPS
 
@@ -78,6 +93,8 @@ class GPT_property_group(bpy.types.PropertyGroup):
         min=1,
         max=500,
         default=50,
+        # TODO: FIX AS IT'S NOT WORKING
+        update=redraw_gp_tree, # Important for updating drawing
     )
 
     contactsheet_x: bpy.props.IntProperty(
@@ -128,6 +145,9 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
 
             draw_gp_line(gp_stroke=gp_stroke, n_points=context.scene.gp_tree.line_length)
+
+            # Experimental! Add stroke to custom properties on scene
+            bpy.context.scene["_current_gp_name"] = gp_object_name
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))
