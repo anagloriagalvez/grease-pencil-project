@@ -4,6 +4,9 @@
 # Blender backups
 *.blend1
 
+# Addons
+*.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
