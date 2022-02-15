@@ -69,9 +69,9 @@ def apply_custom_vertex_config_leaves(point=None):
     point.uv_rotation = random.uniform(-1.0, 1.0)
 
 def redraw_gp_tree(self, context):
-    gp_name = context.scene.get("_current_stroke")
+    gp_name = context.scene.get("_current_gp_name")
+
     if gp_name:
-        print("Updating")
         # TODO: Think more about this! Very risky as we don't know frame, etc.
         gp_stroke = bpy.context.scene.objects[gp_name].data.layers['Test layer'].frames[0].strokes[0]
         remove_all_points_from_stroke(stroke=gp_stroke)
@@ -171,8 +171,9 @@ def register():
     bpy.types.Scene.gp_tree = bpy.props.PointerProperty(
         name="Grease Pencil Tree",
         type=GPT_property_group,
-        description="Information needed for generating a GP Tree",
+        description="Information needed for generating a GP Tree"
     )
+
 
 def unregister():
     for cls in reversed(classes):
