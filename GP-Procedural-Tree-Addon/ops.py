@@ -1,14 +1,17 @@
 import bpy
 from mathutils import *
+from math import sin, cos, radians
 import random
 
 # FUNCTIONS
+
 
 def import_image(image_path=None):
     # Import texture image to Blender
     image = bpy.data.images.load(filepath=image_path)
 
     return image
+
 
 def create_material_texture(material_name="New Test Material", color=(0.0, 0.0, 0.0, 1.0), mode='DOTS', text_img=None):
     # Create material
@@ -25,27 +28,46 @@ def create_material_texture(material_name="New Test Material", color=(0.0, 0.0, 
 
     return gp_mat
 
-def create_new_gp_object():
-    bpy.ops.object.gpencil_add(type="EMPTY")
-    return bpy.context.selected_objects[0]
 
-def create_new_gp_layer(gp_object=None, layer_name="My layer"):
+def get_gp_object(name='GPencil', create_new=True):
+    # If not in scene, add a new object
+    if name not in bpy.context.scene.objects or create_new:
+        bpy.ops.object.gpencil_add(type="EMPTY")
+        # Change name
+        bpy.context.selected_objects[0].name = name
+    return bpy.context.scene.objects[name]
+
+
+def get_gp_layer(gp_object=None, layer_name="My layer"): 
+    # if clear_layer:
+    #     gpencil_layer.clear()
+    if layer_name in gp_object.data.layers.keys():  # List of layer names
+        return gp_object.data.layers[layer_name]
     return gp_object.data.layers.new(name=layer_name, set_active=True)
 
-def change_gp_layer_line_thickness(gp_layer=None, thickness=1):
-    gp_layer.line_change = 100
 
-def create_new_frame_gp_layer(gp_layer=None, frame_number=0):
+def change_gp_layer_line_thickness(gp_layer=None, thickness=1):
+    gp_layer.line_change = thickness
+
+
+def get_frame_gp_layer(gp_layer=None, frame_number=1):
+    for index, frame in enumerate(gp_layer.frames):
+        if frame.frame_number == frame_number:
+            return gp_layer.frames[index]
+    # If not found, or we want to override it, return new frame
     return gp_layer.frames.new(frame_number)
+
 
 def create_new_gp_stroke(gp_frame=None):
     gp_stroke = gp_frame.strokes.new()
     gp_stroke.display_mode = '3DSPACE'  # allows for editing
     return gp_stroke
 
+
 def add_active_material_to_gp(gp_object=None, material_to_add=None):
     gp_object.data.materials.append(material_to_add)
     gp_object.active_material = material_to_add
+
 
 # TODO: Think much more on that
 def draw_gp_line(gp_stroke=None, n_points=50):
@@ -59,6 +81,7 @@ def draw_gp_line(gp_stroke=None, n_points=50):
 
         apply_custom_vertex_config_leaves(point=gp_point)
 
+
 def apply_custom_vertex_config_leaves(point=None):
     point.vertex_color.data.vertex_color[0] = random.uniform(0.300, 0.350)  # Hue?
     point.vertex_color.data.vertex_color[1] = 0.502  # Saturation?
@@ -68,17 +91,19 @@ def apply_custom_vertex_config_leaves(point=None):
     point.pressure = random.uniform(50, 500)
     point.uv_rotation = random.uniform(-1.0, 1.0)
 
+
 def redraw_gp_tree(self, context):
     gp_name = context.scene.get("_current_gp_name")
+    layer_name = context.scene.get("_current_gp_layer_name")
 
-    if gp_name:
-        # TODO: Think more about this! Very risky as we don't know frame, etc.
-        gp_stroke = bpy.context.scene.objects[gp_name].data.layers['Test layer'].frames[0].strokes[0]
+    if gp_name and layer_name:
+        # TODO: Think more about this! Very risky as we don't know frame number, etc.
+        gp_stroke = bpy.context.scene.objects[gp_name].data.layers[layer_name].frames[0].strokes[0]
         remove_all_points_from_stroke(stroke=gp_stroke)
         draw_gp_line(gp_stroke=gp_stroke, n_points=context.scene.gp_tree.line_length)
 
+
 def remove_all_points_from_stroke(stroke=None):
-    print("SOMETHING IS HAPPENING")
     points = stroke.points
     for i in range(0, len(points)):
         stroke.points.pop(index=0)
@@ -94,7 +119,7 @@ class GPT_property_group(bpy.types.PropertyGroup):
         max=500,
         default=50,
         # TODO: FIX AS IT'S NOT WORKING
-        update=redraw_gp_tree, # Important for updating drawing
+        update=redraw_gp_tree,  # Important for updating drawing
     )
 
     contactsheet_x: bpy.props.IntProperty(
@@ -126,18 +151,17 @@ class GPT_OT_generate_tree(bpy.types.Operator):
         try:
             # Add material with image
             text_gp_img = import_image(
-                image_path="C:\\Users\\Ana Gloria\\Desktop\\TFG\\grease-pencil-project\\test.png")
+                image_path="d:\\agalvez\\Desktop\\grease-pencil-project-main\\test.png")
             gp_material = create_material_texture(text_img=text_gp_img)
 
-            gp_object = create_new_gp_object()
-            gp_object_name = gp_object.name_full
+            gp_object = get_gp_object()
 
-            gp_layer = create_new_gp_layer(gp_object=gp_object, layer_name="Test layer")
+            gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer")
 
             # Important! Otherwise, thickness = 0
-            change_gp_layer_line_thickness(gp_layer=gp_layer, thickness=10)
+            change_gp_layer_line_thickness(gp_layer=gp_layer, thickness=100)
 
-            gp_frame = create_new_frame_gp_layer(gp_layer=gp_layer, frame_number=1)
+            gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=context.scene.frame_current)
 
             gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
 
@@ -147,7 +171,9 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             draw_gp_line(gp_stroke=gp_stroke, n_points=context.scene.gp_tree.line_length)
 
             # Experimental! Add stroke to custom properties on scene
-            bpy.context.scene["_current_gp_name"] = gp_object_name
+            context.scene["_current_gp_name"] = gp_object.name_full
+            context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
+            # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))
