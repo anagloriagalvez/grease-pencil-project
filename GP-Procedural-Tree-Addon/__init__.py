@@ -3,7 +3,7 @@ bl_info = {
 "description": "Generate Grease Pencil trees and modify them procedurally",
 "author": "Ana Gloria Gálvez Mellado",
 "version": (0, 0, 1),
-"blender": (3, 0, 0),
+"blender": (3, 2, 0),
 "location": "Sidebar > Grease Pencil > Grease Pencil Tree",
 "warning": "",
 "category": "Object",

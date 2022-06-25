@@ -3,6 +3,7 @@ from mathutils import *
 from math import sin, cos, radians
 import random
 
+
 # FUNCTIONS
 
 
@@ -28,6 +29,9 @@ def create_material_texture(material_name="New Test Material", color=(0.0, 0.0, 
 
     return gp_mat
 
+def get_gp_material(name="New Test Material"):
+    gp_material = bpy.data.materials[name]
+    return gp_material
 
 def get_gp_object(name='GPencil', create_new=True):
     # If not in scene, add a new object
@@ -38,7 +42,7 @@ def get_gp_object(name='GPencil', create_new=True):
     return bpy.context.scene.objects[name]
 
 
-def get_gp_layer(gp_object=None, layer_name="My layer"): 
+def get_gp_layer(gp_object=None, layer_name="My layer"):
     # if clear_layer:
     #     gpencil_layer.clear()
     if layer_name in gp_object.data.layers.keys():  # List of layer names
@@ -84,7 +88,7 @@ def draw_gp_line(gp_stroke=None, n_points=50):
 
 def draw_tree_branch(gp_frame=None, p1=None, p2=None, n_points=50):
     gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
-    gp_stroke.points.add(count=n_points+2)
+    gp_stroke.points.add(count=n_points + 2)
 
     # Point1
     gp_point1 = gp_stroke.points[0]
@@ -95,7 +99,7 @@ def draw_tree_branch(gp_frame=None, p1=None, p2=None, n_points=50):
     line_length = dir_vector.magnitude
     point_dist = line_length / n_points
 
-    for i in range(1, n_points+1):
+    for i in range(1, n_points + 1):
         gp_point = gp_stroke.points[i]
         gp_point.co = Vector(p1) + dir_vector * point_dist * i
         apply_custom_vertex_config_leaves(point=gp_point)
@@ -129,9 +133,10 @@ def tree(x, y, angle, n_levels, branch_length, gp_frame):
 
 
 # MAIN DRAWING METHOD
-def draw_shape(gp_stroke=None, gp_frame=None):
-    # draw_gp_line(gp_stroke=gp_stroke, n_points=bpy.context.scene.gp_tree.line_length)
-    tree(x=0, y=0, angle=90, n_levels=5, branch_length=bpy.context.scene.gp_tree.line_length, gp_frame=gp_frame)
+def draw_tree(gp_stroke=None, gp_frame=None):
+    print("It crashes here2.0")
+    draw_gp_line(gp_stroke=gp_stroke, n_points=bpy.context.scene.gp_tree.line_length)
+    # tree(x=0, y=0, angle=90, n_levels=5, branch_length=bpy.context.scene.gp_tree.line_length, gp_frame=gp_frame)
 
 
 def apply_custom_vertex_config_leaves(point=None):
@@ -147,6 +152,7 @@ def apply_custom_vertex_config_leaves(point=None):
 def redraw_gp_tree(self, context):
     gp_name = context.scene.get("_current_gp_name")
     layer_name = context.scene.get("_current_gp_layer_name")
+    material_name = context.scene.get("_current_gp_material_name")
 
     if gp_name and layer_name:
         # TODO: Think more about this! Very risky as we don't know frame number, etc.
@@ -154,7 +160,17 @@ def redraw_gp_tree(self, context):
         # remove_all_points_from_stroke(stroke=gp_stroke)
         gp_frame = context.scene.objects[gp_name].data.layers[layer_name].frames[0]
         gp_frame.clear()
-        draw_shape(gp_stroke=gp_stroke, gp_frame=gp_frame)
+
+        # Added to fix gp_stroke crashing
+        gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
+
+        # Add desired material to stroke
+        gp_object = get_gp_object(gp_name, False)
+        gp_material = get_gp_material(material_name)
+        add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
+
+
+        draw_tree(gp_stroke=gp_stroke, gp_frame=gp_frame)
 
 
 def remove_all_points_from_stroke(stroke=None):
@@ -176,17 +192,12 @@ class GPT_property_group(bpy.types.PropertyGroup):
         update=redraw_gp_tree,  # Important for updating drawing
     )
 
+    # EXAMPLE PROPERTY
     contactsheet_x: bpy.props.IntProperty(
         name="Resolution X",
         default=1920,
         min=100,
         description="X resolution of contactsheet",
-    )
-    contactsheet_y: bpy.props.IntProperty(
-        name="Resolution Y",
-        default=1080,
-        min=100,
-        description="Y resolution of contactsheet",
     )
 
 
@@ -205,7 +216,7 @@ class GPT_OT_generate_tree(bpy.types.Operator):
         try:
             # Add material with image
             text_gp_img = import_image(
-                image_path="d:\\agalvez\\Desktop\\grease-pencil-project-main\\test.png")
+                image_path= r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\GP-Procedural-Tree-Addon\leaves_texture.png")
             gp_material = create_material_texture(text_img=text_gp_img)
 
             gp_object = get_gp_object()
@@ -225,14 +236,14 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             # Experimental! Add stroke to custom properties on scene
             context.scene["_current_gp_name"] = gp_object.name_full
             context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
+            context.scene["_current_gp_material_name"] = gp_material.name_full  # Material name
             # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
 
-            draw_shape(gp_stroke=gp_stroke, gp_frame=gp_frame)
+            draw_tree(gp_stroke=gp_stroke, gp_frame=gp_frame)
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))
             return {"CANCELLED"}
-
 
         return {"FINISHED"}
 
@@ -243,6 +254,7 @@ classes = [
     GPT_property_group,
     GPT_OT_generate_tree
 ]
+
 
 def register():
     for cls in classes:
