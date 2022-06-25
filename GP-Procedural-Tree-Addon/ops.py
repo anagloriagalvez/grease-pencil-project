@@ -82,6 +82,58 @@ def draw_gp_line(gp_stroke=None, n_points=50):
         apply_custom_vertex_config_leaves(point=gp_point)
 
 
+def draw_tree_branch(gp_frame=None, p1=None, p2=None, n_points=50):
+    gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
+    gp_stroke.points.add(count=n_points+2)
+
+    # Point1
+    gp_point1 = gp_stroke.points[0]
+    gp_point1.co = p1
+    apply_custom_vertex_config_leaves(point=gp_point1)
+
+    dir_vector = Vector(p2) - Vector(p1)
+    line_length = dir_vector.magnitude
+    point_dist = line_length / n_points
+
+    for i in range(1, n_points+1):
+        gp_point = gp_stroke.points[i]
+        gp_point.co = Vector(p1) + dir_vector * point_dist * i
+        apply_custom_vertex_config_leaves(point=gp_point)
+
+    # Point2
+    gp_point2 = gp_stroke.points[-1]
+    gp_point2.co = p2
+    apply_custom_vertex_config_leaves(point=gp_point2)
+
+    return gp_stroke
+
+
+def tree(x, y, angle, n_levels, branch_length, gp_frame):
+    a = radians(angle)
+    if n_levels:
+        x1 = x + int(cos(a) * n_levels * branch_length)
+        y1 = y + int(sin(a) * n_levels * branch_length)
+
+        p1 = [x, y, 0]
+        p2 = [x1, y1, 0]
+        draw_tree_branch(gp_frame=gp_frame, p1=p1, p2=p2, n_points=50)
+
+        # stroke = draw_shape(gp_frame, verts)
+        # stroke.line_width = n_levels * 30
+
+        # Right
+        tree(x1, y1, angle, n_levels - 1, branch_length, gp_frame)
+
+        # Left
+        tree(x1, y1, -angle, n_levels - 1, branch_length, gp_frame)
+
+
+# MAIN DRAWING METHOD
+def draw_shape(gp_stroke=None, gp_frame=None):
+    # draw_gp_line(gp_stroke=gp_stroke, n_points=bpy.context.scene.gp_tree.line_length)
+    tree(x=0, y=0, angle=90, n_levels=5, branch_length=bpy.context.scene.gp_tree.line_length, gp_frame=gp_frame)
+
+
 def apply_custom_vertex_config_leaves(point=None):
     point.vertex_color.data.vertex_color[0] = random.uniform(0.300, 0.350)  # Hue?
     point.vertex_color.data.vertex_color[1] = 0.502  # Saturation?
@@ -98,9 +150,11 @@ def redraw_gp_tree(self, context):
 
     if gp_name and layer_name:
         # TODO: Think more about this! Very risky as we don't know frame number, etc.
-        gp_stroke = bpy.context.scene.objects[gp_name].data.layers[layer_name].frames[0].strokes[0]
-        remove_all_points_from_stroke(stroke=gp_stroke)
-        draw_gp_line(gp_stroke=gp_stroke, n_points=context.scene.gp_tree.line_length)
+        gp_stroke = context.scene.objects[gp_name].data.layers[layer_name].frames[0].strokes[0]
+        # remove_all_points_from_stroke(stroke=gp_stroke)
+        gp_frame = context.scene.objects[gp_name].data.layers[layer_name].frames[0]
+        gp_frame.clear()
+        draw_shape(gp_stroke=gp_stroke, gp_frame=gp_frame)
 
 
 def remove_all_points_from_stroke(stroke=None):
@@ -168,12 +222,12 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             # Add desired material to stroke
             add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
 
-            draw_gp_line(gp_stroke=gp_stroke, n_points=context.scene.gp_tree.line_length)
-
             # Experimental! Add stroke to custom properties on scene
             context.scene["_current_gp_name"] = gp_object.name_full
             context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
             # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
+
+            draw_shape(gp_stroke=gp_stroke, gp_frame=gp_frame)
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))
