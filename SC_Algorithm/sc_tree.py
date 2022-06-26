@@ -56,6 +56,20 @@ class SCTree:
 
         return points_cloud
 
+    def generate_random_direction(self):
+        alpha = random.uniform(0, math.pi)
+        theta = random.uniform(0, 2 * math.pi)
+
+        direction = Vector((
+            math.cos(theta) * math.sin(alpha),
+            math.sin(theta) * math.sin(alpha),
+            math.cos(alpha)
+        ))
+
+        direction.normalize()
+
+        return direction
+
     def remove_reached_leaves(self):
         for leaf in reversed(self.leaves):
             for branch in self.branches:
@@ -89,7 +103,7 @@ class SCTree:
     def generate_tree(self):
 
         # Creation of leaves (points cloud)
-        self.leaves = self.create_spherical_points_cloud(n_points=self.n_leaves, sphere_radius=self.cloud_radius, cloud_centre=Vector((0, 0, 1)))
+        self.leaves = self.create_spherical_points_cloud(n_points=self.n_leaves, sphere_radius=self.cloud_radius, cloud_centre=Vector((0, 0, 1.5)))
         self.original_leaves = self.leaves.copy()
 
         # First branch creation -> special, no parent
@@ -104,30 +118,28 @@ class SCTree:
 
             self.remove_reached_leaves()
 
-            print("N_LEAVES: {}".format(len(self.leaves)))
-            print("Break1")
             if len(self.leaves) > 0:
 
                 # Clear leaves attracting and calculate them again as new branches have been generated
-                if len(self.leaves_attracting) > 0:
-                    self.clear_leaves_attracting()
+                self.clear_leaves_attracting()
 
                 # Calculate new leaves attracting branches
                 self.find_leaves_attracting()
 
-            print("ATTRACTING: {}".format(self.leaves_attracting))
-            print("Break2")
             # If any leaf is attracting branches, we force the branches grow towards them
             if len(self.leaves_attracting) > 0:
-                print("Break3")
+                print("AMOUNT OF LEAVES ATTRACTING:{}".format(self.leaves_attracting))
+                print(len(self.leaves_attracting))
+
                 self.extreme_branches.clear()
                 _new_branches = []
 
                 for branch in self.branches:
+                    print("AMOUNT OF BRANCHES: {}".format(len(self.branches)))
                     if len(branch.leaves_attracting) > 0:
-                        print("Attracted!")
                         # Medium direction among all the attracting leaves
                         _new_dir = Vector((0, 0, 0))
+
                         for attracting_leaf in branch.leaves_attracting:
                             _attracting_dir = attracting_leaf - branch.end
                             _attracting_dir.normalize()
@@ -135,26 +147,26 @@ class SCTree:
                             _new_dir = _new_dir + _attracting_dir
 
                         _new_dir = _new_dir / len(branch.leaves_attracting)
+                        _new_dir = _new_dir + self.generate_random_direction() * 0.05 # Arbitrary value
                         _new_dir.normalize()
 
-                        _new_branch = Branch(start=branch.end, end=branch.end + _new_dir * self.branch_length,
+                        # Variation! Reduce branch length if we are closer to the leaf
+                        _new_branch = Branch(start=branch.end, end=branch.end + _new_dir * self.branch_length/2,
                                              direction=_new_dir, parent=branch)
                         branch.children.append(_new_branch)
                         _new_branches.append(_new_branch)
                         self.extreme_branches.append(_new_branch)
 
                     else:  # If the branch it's not attracted, check if it's an extreme
-                        print("Break4")
-                        if len(branch.children) > 0:
+                        if len(branch.children) == 0:
                             self.extreme_branches.append(branch)
 
+                print("NEW BRANCHES GENERATED: {}".format(len(_new_branches)))
                 self.branches.extend(_new_branches)
 
-                print("Break5")
             # If no leaves are attracting branches (but we still have leaves), tree extremities branches should grow
             # towards the same direction (e.g.: Trunk)
             else:
-                print("Break6")
                 for ex_branch in reversed(self.extreme_branches):
                     _new_branch = Branch(start=ex_branch.end,
                                          end=ex_branch.end + ex_branch.direction * self.branch_length,
@@ -163,9 +175,9 @@ class SCTree:
                     self.branches.append(_new_branch)
                     self.extreme_branches.append(_new_branch)
 
-            print(len(self.branches))
-
             main_loop_iterations = main_loop_iterations + 1
             print(main_loop_iterations)
-            if main_loop_iterations >= 14:
+            if main_loop_iterations >= 10:
                 break;
+
+        print("First branch children: {}".format(self.first_branch.children))

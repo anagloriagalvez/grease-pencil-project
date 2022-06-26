@@ -8,7 +8,7 @@ from branch import Branch
 
 
 def do_main():
-    my_tree = SCTree(n_leaves=10, branch_length=0.2, attraction_distance=0.1,
+    my_tree = SCTree(n_leaves=5, branch_length=0.25, attraction_distance=0.2,
                      reach_distance=0.05)
     my_tree.generate_tree()
 
