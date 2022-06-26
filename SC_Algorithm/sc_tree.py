@@ -12,7 +12,7 @@ import random
 class SCTree:
     # Cloud of points generation
     n_leaves = 10
-    cloud_radius = 0.3
+    cloud_radius = 0.24
 
     # Algorithm parameters
     start_pos = Vector((0.0, 0.0, 0.0))
@@ -103,7 +103,7 @@ class SCTree:
     def generate_tree(self):
 
         # Creation of leaves (points cloud)
-        self.leaves = self.create_spherical_points_cloud(n_points=self.n_leaves, sphere_radius=self.cloud_radius, cloud_centre=Vector((0, 0, 1.5)))
+        self.leaves = self.create_spherical_points_cloud(n_points=self.n_leaves, sphere_radius=self.cloud_radius, cloud_centre=Vector((0, 0, 0.4)))
         self.original_leaves = self.leaves.copy()
 
         # First branch creation -> special, no parent
@@ -149,13 +149,21 @@ class SCTree:
                             _new_dir = _new_dir + _attracting_dir
 
                         _new_dir = _new_dir / len(branch.leaves_attracting)
-                        _new_dir = _new_dir + self.generate_random_direction() * 0.05 # Arbitrary value
+                        # _new_dir = _new_dir + self.generate_random_direction() * 0.01 # Arbitrary value
                         _new_dir.normalize()
 
-                        # Variation! Reduce branch length if we are closer to the leaf
                         _new_branch = Branch(start=branch.end, end=branch.end + _new_dir * self.branch_length,
                                              direction=_new_dir, parent=branch)
+
+                        print("NEW BRANCH: {}".format(_new_branch))
+                        print("NEW BRANCH CHILDREN: {}".format(_new_branch.children))
+                        print("CURRENT BRANCH CHILDREN: {}".format(branch.children))
+
                         branch.children.append(_new_branch)
+
+
+                        print("CURRENT BRANCH CHILDREN UPDATED: {}".format(branch.children))
+
                         _new_branches.append(_new_branch)
                         self.extreme_branches.append(_new_branch)
 
@@ -186,7 +194,8 @@ class SCTree:
             main_loop_iterations = main_loop_iterations + 1
 
             print(main_loop_iterations)
-            if main_loop_iterations >= 10:
+            if main_loop_iterations >= 80:
                 break
 
+        print("Total branches: {}".format(len(self.branches)))
         print("First branch children: {}".format(self.first_branch.children))
