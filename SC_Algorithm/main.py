@@ -20,8 +20,8 @@ def draw_tree(tree):
     gp_frame = gp_layer.frames.new(0)
 
     for branch in tree.branches:
-        if branch.parent is not None:
-            draw_line(gp_frame, branch.start, branch.end)
+        draw_line(gp_frame, branch.start, branch.end)
+
 
 
 def draw_leaves(tree):

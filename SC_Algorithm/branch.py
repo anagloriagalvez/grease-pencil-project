@@ -15,3 +15,7 @@ class Branch:
         self.end = end
         self.direction = direction
         self.parent = parent
+
+        # Reset children
+        self.children = []
+        self.leaves_attracting = []

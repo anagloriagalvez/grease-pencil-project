@@ -75,7 +75,7 @@ class SCTree:
             for branch in self.branches:
                 if (branch.end - leaf).length <= self.reach_distance:
                     self.leaves.remove(leaf)
-                    break;
+                    break
 
     def clear_leaves_attracting(self):
         self.leaves_attracting.clear()
@@ -116,6 +116,8 @@ class SCTree:
         # Algorithm main loop
         while len(self.leaves) > 0:
 
+            # set extremities as grown
+
             self.remove_reached_leaves()
 
             if len(self.leaves) > 0:
@@ -151,7 +153,7 @@ class SCTree:
                         _new_dir.normalize()
 
                         # Variation! Reduce branch length if we are closer to the leaf
-                        _new_branch = Branch(start=branch.end, end=branch.end + _new_dir * self.branch_length/2,
+                        _new_branch = Branch(start=branch.end, end=branch.end + _new_dir * self.branch_length,
                                              direction=_new_dir, parent=branch)
                         branch.children.append(_new_branch)
                         _new_branches.append(_new_branch)
@@ -167,17 +169,24 @@ class SCTree:
             # If no leaves are attracting branches (but we still have leaves), tree extremities branches should grow
             # towards the same direction (e.g.: Trunk)
             else:
-                for ex_branch in reversed(self.extreme_branches):
+                _new_extreme_branches = []
+                for ex_branch in self.extreme_branches:
                     _new_branch = Branch(start=ex_branch.end,
                                          end=ex_branch.end + ex_branch.direction * self.branch_length,
                                          direction=ex_branch.direction, parent=ex_branch)
+
                     ex_branch.children.append(_new_branch)
+
                     self.branches.append(_new_branch)
-                    self.extreme_branches.append(_new_branch)
+                    _new_extreme_branches.append(_new_branch)
+
+                self.extreme_branches.clear()
+                self.extreme_branches = _new_extreme_branches.copy()
 
             main_loop_iterations = main_loop_iterations + 1
+
             print(main_loop_iterations)
             if main_loop_iterations >= 10:
-                break;
+                break
 
         print("First branch children: {}".format(self.first_branch.children))
