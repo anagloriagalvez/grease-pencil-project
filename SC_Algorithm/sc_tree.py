@@ -157,18 +157,18 @@ class SCTree:
 
                         print("NEW BRANCH: {}".format(_new_branch))
                         print("NEW BRANCH CHILDREN: {}".format(_new_branch.children))
-                        print("CURRENT BRANCH CHILDREN: {}".format(branch.children))
+                        print("CURRENT BRANCH CHILDREN: {}".format(branch.count))
 
-                        branch.children.append(_new_branch)
+                        branch.count.append(_new_branch)
 
 
-                        print("CURRENT BRANCH CHILDREN UPDATED: {}".format(branch.children))
+                        print("CURRENT BRANCH CHILDREN UPDATED: {}".format(branch.count))
 
                         _new_branches.append(_new_branch)
                         self.extreme_branches.append(_new_branch)
 
                     else:  # If the branch it's not attracted, check if it's an extreme
-                        if len(branch.children) == 0:
+                        if len(branch.count) == 0:
                             self.extreme_branches.append(branch)
 
                 print("NEW BRANCHES GENERATED: {}".format(len(_new_branches)))
