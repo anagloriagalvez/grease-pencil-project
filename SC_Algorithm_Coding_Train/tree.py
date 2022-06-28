@@ -30,14 +30,14 @@ class Tree:
         self.min_dist = min_dist
 
     def create_trunk(self):
-        root = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.tree_height / 2)
+        root = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.tree_height)
         self.branches.append(root)
         current_branch = root
 
         while not self.trunk_close_enough(current_branch):
             trunk = Branch(position=current_branch.pos + current_branch.direction * current_branch.length,
                            direction=current_branch.direction.copy(),
-                           parent=current_branch, length=self.tree_height / 2)
+                           parent=current_branch, length=self.tree_height)
             self.branches.append(trunk)
             current_branch = trunk
 
@@ -127,7 +127,7 @@ class Tree:
                 if branch.count > 0:
                     branch.direction = branch.direction / branch.count
                     branch.direction.normalize()
-                    _new_branch_direction = branch.direction.copy() + self.generate_random_direction() * 0.05
+                    _new_branch_direction = branch.direction.copy() + self.generate_random_direction() * 0.1
 
                     # Re-do this method as we can simply calculate the new branch direction without modifying the
                     # current branch's one

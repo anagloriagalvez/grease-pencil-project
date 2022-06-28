@@ -9,7 +9,7 @@ from branch import Branch
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=3, tree_height=0.05, max_dist=0.3, min_dist=0.01)
+    my_tree = Tree(n_leaves=50, tree_height=0.05, max_dist=0.3, min_dist=0.05)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
