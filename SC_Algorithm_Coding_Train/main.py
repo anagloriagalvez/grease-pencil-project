@@ -9,7 +9,7 @@ from branch import Branch
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=50, tree_height=0.7, max_dist=0.05, min_dist=0.3)
+    my_tree = Tree(n_leaves=3, tree_height=0.05, max_dist=0.3, min_dist=0.01)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
@@ -20,13 +20,12 @@ def draw_tree(tree):
     gp_frame = gp_layer.frames.new(0)
 
     for branch in tree.branches:
-        draw_line(gp_frame, branch.start, branch.end)
+        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length)
 
 
 
 def draw_leaves(tree):
     for leaf in tree.original_leaves:
-        print(leaf)
         bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.01)
 
 def get_grease_pencil(gpencil_obj_name='GPencil') -> bpy.types.GreasePencil:
