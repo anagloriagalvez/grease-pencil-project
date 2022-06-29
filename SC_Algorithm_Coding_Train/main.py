@@ -9,7 +9,7 @@ from branch import Branch
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=50, tree_height=0.05, max_dist=0.3, min_dist=0.05)
+    my_tree = Tree(n_leaves=150, tree_height=0.02, max_dist=0.3, min_dist=0.02, max_thickness=20)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
@@ -20,7 +20,7 @@ def draw_tree(tree):
     gp_frame = gp_layer.frames.new(0)
 
     for branch in tree.branches:
-        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length)
+        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
 
 
 
@@ -78,7 +78,7 @@ def init_grease_pencil(gpencil_obj_name='GPencil', gpencil_layer_name='GP_Layer'
     return gpencil_layer
 
 
-def draw_line(gp_frame, p0: tuple, p1: tuple):
+def draw_line(gp_frame, p0: tuple, p1: tuple, thickness = 1):
     # Init new stroke
     gp_stroke = gp_frame.strokes.new()
     gp_stroke.display_mode = '3DSPACE'  # allows for editing
@@ -86,7 +86,9 @@ def draw_line(gp_frame, p0: tuple, p1: tuple):
     # Define stroke geometry
     gp_stroke.points.add(count=2)
     gp_stroke.points[0].co = p0
+    gp_stroke.points[0].pressure = thickness
     gp_stroke.points[1].co = p1
+    gp_stroke.points[1].pressure = thickness
     return gp_stroke
 
 # test

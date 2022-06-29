@@ -10,7 +10,7 @@ import math
 
 
 class Tree:
-    branches_sphere_radius = 0.3
+    branches_sphere_radius = 0.2
     tree_height = 0.8
 
     max_dist = 0
@@ -20,24 +20,28 @@ class Tree:
     leaves = []
     original_leaves = []
 
-    def __init__(self, n_leaves, tree_height, max_dist, min_dist):
+    # Drawing parameters
+    max_thickness = 1
+
+    def __init__(self, n_leaves, tree_height, max_dist, min_dist, max_thickness):
         self.branches = []
         self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=self.branches_sphere_radius,
-                                           cloud_centre=Vector((0, 0, 1)))
+                                           cloud_centre=Vector((0, 0, 0.5)))
         self.original_leaves = self.leaves.copy()
         self.tree_height = tree_height
         self.max_dist = max_dist
         self.min_dist = min_dist
+        self.max_thickness = max_thickness
 
     def create_trunk(self):
-        root = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.tree_height)
+        root = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.tree_height, thickness=self.max_thickness)
         self.branches.append(root)
         current_branch = root
 
         while not self.trunk_close_enough(current_branch):
             trunk = Branch(position=current_branch.pos + current_branch.direction * current_branch.length,
                            direction=current_branch.direction.copy(),
-                           parent=current_branch, length=self.tree_height)
+                           parent=current_branch, length=self.tree_height, thickness=current_branch.thickness * 0.90)
             self.branches.append(trunk)
             current_branch = trunk
 
@@ -135,12 +139,13 @@ class Tree:
 
                     _new_branch = Branch(position=branch.pos + branch.length * branch.direction,
                                          direction=_new_branch_direction, parent=None,
-                                         length=branch.length)
+                                         length=branch.length, thickness=branch.thickness * 0.80)
                     _new_branches.append(_new_branch)
                     self.control_branch_test = _new_branch
 
             self.branches.extend(_new_branches)
 
             n_iterations = n_iterations + 1
-            if n_iterations > 400:
+            if n_iterations > 100:
+                print("N_LEAVES: {}".format(len(self.leaves)))
                 break
