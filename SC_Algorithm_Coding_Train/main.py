@@ -1,6 +1,7 @@
 import sys
 sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm_Coding_Train")
 import bpy
+from mathutils import Vector
 import random
 #from .sc_tree import SCTree
 from tree import Tree
@@ -9,7 +10,7 @@ from branch import Branch
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=150, tree_height=0.02, max_dist=0.3, min_dist=0.02, max_thickness=20*4)
+    my_tree = Tree(n_leaves=150, tree_height=0.02, max_dist=0.3, min_dist=0.02, tree_crown_radius=1, tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
