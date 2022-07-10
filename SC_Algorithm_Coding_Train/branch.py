@@ -1,7 +1,13 @@
 from mathutils import Vector
 
+
 class Branch:
+    """
+    Contains the information about every branch, also called "tree node"
+    on the original Space Colonization algorithm by Runions et al.
+    """
     parent = None
+    children = []
     pos = Vector((0.0, 0.0, 0.0))
     direction = Vector((0.0, 0.0, 0.0))
     direction_bkp = Vector((0.0, 0.0, 0.0))
@@ -23,8 +29,3 @@ class Branch:
     def reset(self):
         self.count = 0
         self.direction = self.direction_bkp.copy()
-
-
-
-
-

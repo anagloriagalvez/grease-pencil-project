@@ -20,13 +20,15 @@ class Tree:
     leaves = []
     original_leaves = []
 
+    max_iterations = 100
+
     # Drawing parameters
     max_thickness = 1
 
     def __init__(self, n_leaves, tree_height, max_dist, min_dist, max_thickness):
         self.branches = []
         self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=self.branches_sphere_radius,
-                                           cloud_centre=Vector((0, 0, 0.5)))
+                                           cloud_centre=Vector((0, 0, 0.5*3)))
         self.original_leaves = self.leaves.copy()
         self.tree_height = tree_height
         self.max_dist = max_dist
@@ -41,7 +43,8 @@ class Tree:
         while not self.trunk_close_enough(current_branch):
             trunk = Branch(position=current_branch.pos + current_branch.direction * current_branch.length,
                            direction=current_branch.direction.copy(),
-                           parent=current_branch, length=self.tree_height, thickness=current_branch.thickness * 0.90)
+                           parent=current_branch, length=self.tree_height, thickness=current_branch.thickness * 0.97)
+            current_branch.children.append(trunk)
             self.branches.append(trunk)
             current_branch = trunk
 
@@ -52,7 +55,7 @@ class Tree:
 
     def create_spherical_points_cloud(self, n_points, sphere_radius, cloud_centre):
         for i in range(0, n_points):
-            radius = random.uniform(0.5, 1)
+            radius = random.uniform(0.5*2, 1*2)
             radius = radius * sphere_radius
 
             alpha = random.uniform(0, math.pi)
@@ -89,14 +92,14 @@ class Tree:
         # Main growing algorithm
         n_iterations = 0
 
-        while len(self.leaves) > 0:
+        while len(self.leaves) > 0 or n_iterations < self.max_iterations:
             for leaf in self.leaves:
                 closest_branch = None
                 closest_direction = None
                 record_distance = -1
 
                 for branch in self.branches:
-                    _branch_end =branch.pos + branch.length * branch.direction
+                    _branch_end = branch.pos + branch.length * branch.direction
                     direction = leaf.pos - _branch_end
                     distance = direction.length
 
@@ -139,13 +142,12 @@ class Tree:
 
                     _new_branch = Branch(position=branch.pos + branch.length * branch.direction,
                                          direction=_new_branch_direction, parent=None,
-                                         length=branch.length, thickness=branch.thickness * 0.80)
+                                         length=branch.length, thickness=branch.thickness * 0.95)
+
+                    branch.children.append(_new_branch)
                     _new_branches.append(_new_branch)
                     self.control_branch_test = _new_branch
 
             self.branches.extend(_new_branches)
 
             n_iterations = n_iterations + 1
-            if n_iterations > 100:
-                print("N_LEAVES: {}".format(len(self.leaves)))
-                break

@@ -9,7 +9,7 @@ from branch import Branch
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=150, tree_height=0.02, max_dist=0.3, min_dist=0.02, max_thickness=20)
+    my_tree = Tree(n_leaves=150, tree_height=0.02, max_dist=0.3, min_dist=0.02, max_thickness=20*4)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
@@ -26,7 +26,7 @@ def draw_tree(tree):
 
 def draw_leaves(tree):
     for leaf in tree.original_leaves:
-        bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.01)
+        bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.025)
 
 def get_grease_pencil(gpencil_obj_name='GPencil') -> bpy.types.GreasePencil:
     """
@@ -78,7 +78,7 @@ def init_grease_pencil(gpencil_obj_name='GPencil', gpencil_layer_name='GP_Layer'
     return gpencil_layer
 
 
-def draw_line(gp_frame, p0: tuple, p1: tuple, thickness = 1):
+def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     # Init new stroke
     gp_stroke = gp_frame.strokes.new()
     gp_stroke.display_mode = '3DSPACE'  # allows for editing
