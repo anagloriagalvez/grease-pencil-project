@@ -25,6 +25,8 @@ class Branch:
         self.length = length
         self.count = 0
         self.thickness = thickness
+        # Reset children
+        self.children = []
 
     def reset(self):
         self.count = 0

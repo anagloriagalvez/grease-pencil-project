@@ -1,33 +1,45 @@
 import sys
-sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm_Coding_Train")
+
+sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm")
 import bpy
 from mathutils import Vector
 import random
-#from .sc_tree import SCTree
+# from .sc_tree import SCTree
 from tree import Tree
 from branch import Branch
 
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=150, tree_height=0.02, max_dist=0.3, min_dist=0.02, tree_crown_radius=1, tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
+    my_tree = Tree(n_leaves=5, branch_length=0.02, max_dist=0.3, min_dist=0.02, tree_crown_radius=1,
+                   tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
     draw_leaves(my_tree)
 
+
 def draw_tree(tree):
     gp_layer = init_grease_pencil()
     gp_frame = gp_layer.frames.new(0)
 
-    for branch in tree.branches:
-        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
+    print("TREE BRANCHES: {}".format(len(tree.branches)))
 
+    gp_stroke = gp_frame.strokes.new()
+    gp_stroke.display_mode = '3DSPACE'
+    #gp_stroke.points.add(count=1)
+    #gp_stroke.points[0].co = tree.first_branch.pos
+    #gp_stroke.points[0].pressure = tree.first_branch.thickness
+    draw_recursive(gp_frame=gp_frame, gp_stroke=gp_stroke, branch=tree.first_branch)
+
+    # for branch in tree.branches:
+    #    draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
 
 
 def draw_leaves(tree):
     for leaf in tree.original_leaves:
         bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.025)
+
 
 def get_grease_pencil(gpencil_obj_name='GPencil') -> bpy.types.GreasePencil:
     """
@@ -79,6 +91,35 @@ def init_grease_pencil(gpencil_obj_name='GPencil', gpencil_layer_name='GP_Layer'
     return gpencil_layer
 
 
+def draw_recursive(gp_frame, gp_stroke, branch):
+    print("CHILDREN: {}".format(len(branch.children)))
+    gp_stroke.points.add(count=1)
+    gp_stroke.points[len(gp_stroke.points)].co = branch.pos
+    gp_stroke.points[len(gp_stroke.points)].pressure = branch.thickness
+
+    if len(branch.children) == 0:
+        print("TRUE")
+        return
+
+    gp_stroke.points.add(count=1)
+    gp_stroke.points[len(gp_stroke.points)].co = branch.children[0].pos
+    gp_stroke.points[len(gp_stroke.points)].pressure = branch.children[0].thickness
+
+    draw_recursive(gp_frame=gp_frame, gp_stroke=gp_stroke, branch=branch.children[0])
+
+    if len(branch.children) > 1:
+        print("HELLO")
+        print("--CHILDREN: {}".format(len(branch.children)))
+        for i in range(1, len(branch.children)):
+            new_gp_stroke = gp_frame.strokes.new()
+            new_gp_stroke.display_mode = '3DSPACE'
+            #new_gp_stroke.points.add(count=1)
+            #new_gp_stroke.points[0].co = branch.pos
+            #new_gp_stroke.points[0].pressure = branch.thickness
+
+            draw_recursive(gp_frame=gp_frame, gp_stroke=new_gp_stroke, branch=branch.children[i])
+
+
 def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     # Init new stroke
     gp_stroke = gp_frame.strokes.new()
@@ -92,6 +133,6 @@ def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     gp_stroke.points[1].pressure = thickness
     return gp_stroke
 
+
 # test
 do_main()
-

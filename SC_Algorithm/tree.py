@@ -1,6 +1,7 @@
 import sys
 
-sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm_Coding_Train")
+
+sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm")
 
 from mathutils import Vector
 from branch import Branch
@@ -20,6 +21,7 @@ class Tree:
     branches = []
     leaves = []
     original_leaves = []
+    first_branch = None
 
     max_iterations = 100
 
@@ -36,32 +38,15 @@ class Tree:
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=self.tree_crown_radius,
-                                           cloud_centre=self.tree_crown_position)
+        self.create_tree_crown(n_points=n_leaves, type = "DOUBLE", sphere_radius=self.tree_crown_radius,
+                               cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
-    def create_trunk(self):
-        root = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.branch_length,
-                      thickness=self.max_thickness)
-        self.branches.append(root)
-        current_branch = root
-
-        while not self.trunk_close_enough(current_branch):
-            trunk = Branch(position=current_branch.pos + current_branch.direction * current_branch.length,
-                           direction=current_branch.direction.copy(),
-                           parent=current_branch, length=self.branch_length, thickness=current_branch.thickness * 0.97)
-            current_branch.children.append(trunk)
-            self.branches.append(trunk)
-            current_branch = trunk
-
-    def trunk_close_enough(self, branch):
-        for leaf in self.leaves:
-            if (leaf.pos - branch.pos).length < self.max_dist:
-                return True
-
     def create_spherical_points_cloud(self, n_points, sphere_radius, cloud_centre):
+        points = []
+
         for i in range(0, n_points):
-            radius = random.uniform(0.5 * 2, 1 * 2)
+            radius = random.uniform(0.5, 1)
             radius = radius * sphere_radius
 
             alpha = random.uniform(0, math.pi)
@@ -75,8 +60,66 @@ class Tree:
 
             # Force it to be near the centre
             point = cloud_centre + point
-            _new_leaf = Leaf(position=point)
-            self.leaves.append(_new_leaf)
+            leaf = Leaf(position=point)
+            self.leaves.append(leaf)
+
+    def create_obloid_points_cloud(self, n_points, sphere_radius, cloud_centre):
+        points = []
+
+        for i in range(0, n_points):
+            radius = random.uniform(0.3, 0.7)
+            radius = radius * sphere_radius
+
+            alpha = random.uniform(0, math.pi)
+            theta = random.uniform(0, 2 * math.pi)
+            eta = random.uniform(0.3, 0.7)
+
+            point = Vector((
+                radius * float(math.cosh(eta)) * math.cos(theta) * math.sin(alpha),
+                radius * float(math.cosh(eta)) * math.sin(theta) * math.sin(alpha),
+                radius * float(math.sinh(eta)) * math.cos(alpha)
+            ))
+
+            # Force it to be near the centre
+            point = cloud_centre + point
+            leaf = Leaf(position=point)
+            self.leaves.append(leaf)
+
+    def create_tree_crown(self, n_points, type, sphere_radius, cloud_centre):
+        if type == "ROUNDED":
+            self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
+                                               cloud_centre=cloud_centre)
+        elif type == "SPHERICAL":
+            self.create_obloid_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
+                                            cloud_centre=cloud_centre)
+        elif type == "DOUBLE":
+            n_points = int(n_points / 2)
+            cloud_centre_1 = Vector((-0.5, 0, 1.5))
+            cloud_centre_2 = Vector((0.3, 0, 2))
+
+            self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius/1.7,
+                                               cloud_centre=cloud_centre_1)
+            self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius/2,
+                                               cloud_centre=cloud_centre_2)
+
+    def create_trunk(self):
+        self.first_branch = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.branch_length,
+                      thickness=self.max_thickness)
+        self.branches.append(self.first_branch)
+        current_branch = self.first_branch
+
+        while not self.trunk_close_enough(current_branch):
+            trunk = Branch(position=current_branch.pos + current_branch.direction * current_branch.length,
+                           direction=current_branch.direction.copy(),
+                           parent=current_branch, length=self.branch_length, thickness=current_branch.thickness * 0.97)
+            current_branch.children.append(trunk)
+            self.branches.append(trunk)
+            current_branch = trunk
+
+    def trunk_close_enough(self, branch):
+        for leaf in self.leaves:
+            if (leaf.pos - branch.pos).length < self.max_dist:
+                return True
 
     def generate_random_direction(self):
         alpha = random.uniform(0, math.pi)
@@ -94,7 +137,6 @@ class Tree:
 
     def generate_tree(self):
         self.create_trunk()
-
         # Main growing algorithm
         n_iterations = 0
 
