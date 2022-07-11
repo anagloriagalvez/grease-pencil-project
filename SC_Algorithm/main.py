@@ -11,7 +11,7 @@ from branch import Branch
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=5, branch_length=0.02, max_dist=0.3, min_dist=0.02, tree_crown_radius=1,
+    my_tree = Tree(n_leaves=150, branch_length=0.02, max_dist=0.3, min_dist=0.02, tree_crown_radius=1,
                    tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
     my_tree.generate_tree()
 
@@ -23,17 +23,10 @@ def draw_tree(tree):
     gp_layer = init_grease_pencil()
     gp_frame = gp_layer.frames.new(0)
 
-    print("TREE BRANCHES: {}".format(len(tree.branches)))
+    #draw_recursive(gp_frame=gp_frame, point_list=[], branch=tree.first_branch)
 
-    gp_stroke = gp_frame.strokes.new()
-    gp_stroke.display_mode = '3DSPACE'
-    #gp_stroke.points.add(count=1)
-    #gp_stroke.points[0].co = tree.first_branch.pos
-    #gp_stroke.points[0].pressure = tree.first_branch.thickness
-    draw_recursive(gp_frame=gp_frame, gp_stroke=gp_stroke, branch=tree.first_branch)
-
-    # for branch in tree.branches:
-    #    draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
+    for branch in tree.branches:
+        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
 
 
 def draw_leaves(tree):
@@ -91,34 +84,43 @@ def init_grease_pencil(gpencil_obj_name='GPencil', gpencil_layer_name='GP_Layer'
     return gpencil_layer
 
 
-def draw_recursive(gp_frame, gp_stroke, branch):
+def draw_recursive(gp_frame, point_list, branch):
     print("CHILDREN: {}".format(len(branch.children)))
-    gp_stroke.points.add(count=1)
-    gp_stroke.points[len(gp_stroke.points)].co = branch.pos
-    gp_stroke.points[len(gp_stroke.points)].pressure = branch.thickness
+
+    point = [branch.pos, branch.thickness]
+    point_list.append(point)
 
     if len(branch.children) == 0:
+        draw_line_n_points(gp_frame, points_list=point_list)
         print("TRUE")
         return
 
-    gp_stroke.points.add(count=1)
-    gp_stroke.points[len(gp_stroke.points)].co = branch.children[0].pos
-    gp_stroke.points[len(gp_stroke.points)].pressure = branch.children[0].thickness
+    point = [branch.children[0].pos, branch.children[0].thickness]
+    point_list.append(point)
 
-    draw_recursive(gp_frame=gp_frame, gp_stroke=gp_stroke, branch=branch.children[0])
+    draw_recursive(gp_frame=gp_frame, point_list=point_list, branch=branch.children[0])
 
     if len(branch.children) > 1:
         print("HELLO")
         print("--CHILDREN: {}".format(len(branch.children)))
         for i in range(1, len(branch.children)):
-            new_gp_stroke = gp_frame.strokes.new()
-            new_gp_stroke.display_mode = '3DSPACE'
-            #new_gp_stroke.points.add(count=1)
-            #new_gp_stroke.points[0].co = branch.pos
-            #new_gp_stroke.points[0].pressure = branch.thickness
+            new_point_list = []
+            point = [branch.pos, branch.thickness]
+            point_list.append(point)
 
-            draw_recursive(gp_frame=gp_frame, gp_stroke=new_gp_stroke, branch=branch.children[i])
+            draw_recursive(gp_frame=gp_frame, point_list=new_point_list, branch=branch.children[i])
 
+def draw_line_n_points(gp_frame, points_list):
+    # Init new stroke
+    gp_stroke = gp_frame.strokes.new()
+    gp_stroke.display_mode = '3DSPACE'  # allows for editing
+
+
+    # Define stroke geometry
+    gp_stroke.points.add(count=len(points_list))
+    for count, point in enumerate(points_list):
+        gp_stroke.points[count].co = point[0]
+        gp_stroke.points[count].pressure = point[1]
 
 def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     # Init new stroke
