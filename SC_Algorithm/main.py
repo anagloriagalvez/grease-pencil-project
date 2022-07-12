@@ -1,12 +1,20 @@
+# -----------------------------------------------------------
+# Code based on The Coding Train implementation
+# Released under MIT License
+# Link to GitHub: shorturl.at/CFMQY
+# Link to webpage: shorturl.at/cWY16
+#
+# Blender + Python adaptation by: Ana Gloria Gálvez Mellado
+# ana.gloria.galvez99@gmail.com
+# -----------------------------------------------------------
+
 import sys
 
 sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm")
 import bpy
 from mathutils import Vector
 import random
-# from .sc_tree import SCTree
 from tree import Tree
-from branch import Branch
 
 
 def do_main():

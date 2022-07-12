@@ -1,5 +1,13 @@
+# -----------------------------------------------------------
+# Code based on The Coding Train implementation
+# Released under MIT License
+# Link to GitHub: shorturl.at/CFMQY
+# Link to webpage: shorturl.at/cWY16
+#
+# Blender + Python adaptation by: Ana Gloria Gálvez Mellado
+# ana.gloria.galvez99@gmail.com
+# -----------------------------------------------------------
 import sys
-
 
 sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm")
 
@@ -27,13 +35,26 @@ class Tree:
     original_leaves = []
     first_branch = None
 
-    max_iterations = 100 # Prevents infinite loops
+    max_iterations = 100  # Prevents infinite loops
 
     # Drawing parameters
     max_thickness = 1
 
     def __init__(self, n_leaves, branch_length, max_dist, min_dist, tree_crown_radius, tree_crown_position,
                  max_iterations, max_thickness):
+        """
+        Creates a tree and initializes the leaves (attraction nodes) based on the tree type.
+
+        :param int n_leaves: Number of "leaves" of the tree
+        :param float branch_length: length of each tree branch
+        :param max_dist:
+        :param min_dist:
+        :param float tree_crown_radius radius of the tree crown
+        :param Vector tree_crown_position: position of the tree crown
+        :param int max_iterations: maximum number of iterations allowed (avoids crashing)
+        :param float max_thickness: maximum thickness of the branches (the trunk thickness)
+        """
+        self.control_branch_test = None
         self.branch_length = branch_length
         self.max_dist = max_dist
         self.min_dist = min_dist
@@ -42,12 +63,20 @@ class Tree:
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_tree_crown(n_points=n_leaves, type = "DOUBLE", sphere_radius=self.tree_crown_radius,
+        self.create_tree_crown(n_leaves=n_leaves, crown_type="DOUBLE", sphere_radius=self.tree_crown_radius,
                                cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
+    # Tree crown
     def create_spherical_points_cloud(self, n_points, sphere_radius, cloud_centre):
-        points = []
+        """
+        It creates a spherical crown cloud of points randomly distributed and
+        use their position to initialize the tree leaves.
+
+        :param int n_points: number of points (leaves)
+        :param float sphere_radius: max radius for the cloud
+        :param Vector cloud_centre: Position of the 3D space where the cloud should be
+        """
 
         for i in range(0, n_points):
             radius = random.uniform(0.5, 1)
@@ -68,7 +97,14 @@ class Tree:
             self.leaves.append(leaf)
 
     def create_oblate_points_cloud(self, n_points, sphere_radius, cloud_centre):
-        points = []
+        """
+        It creates an oblate spherical cloud of points randomly distributed and
+        use their position to initialize the tree leaves.
+
+        :param int n_points: number of points (leaves)
+        :param float sphere_radius: max radius for the cloud
+        :param Vector cloud_centre: Position of the 3D space where the cloud should be
+        """
 
         for i in range(0, n_points):
             radius = random.uniform(0.3, 0.7)
@@ -89,26 +125,39 @@ class Tree:
             leaf = Leaf(position=point)
             self.leaves.append(leaf)
 
-    def create_tree_crown(self, n_points, type, sphere_radius, cloud_centre):
-        if type == "ROUNDED":
-            self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
+    def create_tree_crown(self, n_leaves, crown_type, sphere_radius, cloud_centre):
+        """
+        Creates the tree crown (initializes the leaves) based on the crown type.
+
+        :param int n_leaves: Max number of leaves
+        :param str crown_type: Type of tree crown shape: Rounded, spherical, double
+        :param float sphere_radius: Determines the size of the crown
+        :param float cloud_centre: Where the crown centre should be placed
+        """
+        if crown_type == "ROUNDED":
+            self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius,
                                                cloud_centre=cloud_centre)
-        elif type == "SPHERICAL":
-            self.create_oblate_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
+        elif crown_type == "SPHERICAL":
+            self.create_oblate_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius,
                                             cloud_centre=cloud_centre)
-        elif type == "DOUBLE":
-            n_points = int(n_points / 2)
+        elif crown_type == "DOUBLE":
+            n_leaves = int(n_leaves / 2)
             cloud_centre_1 = Vector((-0.5, 0, 1.5))
             cloud_centre_2 = Vector((0.3, 0, 2))
 
-            self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius/1.7,
+            self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius / 1.7,
                                                cloud_centre=cloud_centre_1)
-            self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius/2,
+            self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius / 2,
                                                cloud_centre=cloud_centre_2)
 
+    # Tree trunk
     def create_trunk(self):
+        """
+        Aux method to create the tree's trunk. It keeps growing (creating new branches)
+        towards the same direction (up) until it's close enough to the leaves
+        """
         self.first_branch = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.branch_length,
-                      thickness=self.max_thickness, parent=None)
+                                   thickness=self.max_thickness, parent=None)
         self.branches.append(self.first_branch)
         current_branch = self.first_branch
 
@@ -121,11 +170,23 @@ class Tree:
             current_branch = trunk
 
     def trunk_close_enough(self, branch):
+        """
+        Aux method used to check if the new trunk branches are close
+        enough to any leaf.
+
+        :param Branch branch: the branch used to check if it's close enough
+        """
         for leaf in self.leaves:
             if (leaf.pos - branch.pos).length < self.max_dist:
                 return True
 
+    # Auxiliary method
     def generate_random_direction(self):
+        """
+        An aux method used to create a random direction (normalized vector)
+        :return:
+        Vector direction: random direction vector
+        """
         alpha = random.uniform(0, math.pi)
         theta = random.uniform(0, 2 * math.pi)
 
@@ -139,7 +200,12 @@ class Tree:
 
         return direction
 
+    # Main algorithm
     def generate_tree(self):
+        """
+        Core of the Space Colonization algorithm.
+        """
+
         self.create_trunk()
         # Main growing algorithm
         n_iterations = 0

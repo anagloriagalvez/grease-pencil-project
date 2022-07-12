@@ -1,3 +1,12 @@
+# -----------------------------------------------------------
+# Code based on The Coding Train implementation
+# Released under MIT License
+# Link to GitHub: shorturl.at/CFMQY
+# Link to webpage: shorturl.at/cWY16
+#
+# Blender + Python adaptation by: Ana Gloria Gálvez Mellado
+# ana.gloria.galvez99@gmail.com
+# -----------------------------------------------------------
 from mathutils import Vector
 
 
@@ -19,12 +28,13 @@ class Branch:
 
     def __init__(self, position, direction, parent, length, thickness):
         """
-        Creates a new branch
-        :Vector position: original branch position
-        :Vector direction: growth direction of the branch
-        :Branch parent: the branch's parent (another branch)
-        :float length: branch's length
-        :float thickness: branch thickness (with drawing purposes)
+        Creates a new branch.
+
+        :param Vector position: original branch position
+        :param Vector direction: growth direction of the branch
+        :param Branch parent: the branch's parent (another branch)
+        :param float length: branch's length
+        :param float thickness: branch thickness (with drawing purposes)
         """
         self.parent = parent
         self.pos = position.copy()
@@ -40,7 +50,7 @@ class Branch:
         """
         Clears the count and resets the direction, used to
         calculate the new branch's average direction on the
-        main algorithm
+        main algorithm.
         """
         self.count = 0
         self.direction = self.direction_bkp.copy()
