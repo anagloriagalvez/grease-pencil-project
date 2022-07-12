@@ -11,5 +11,9 @@ class Leaf:
     reached = False
 
     def __init__(self, position):
+        """
+        Creates a new leaf
+        :Vector position: leaf position (3D)
+        """
         self.pos = position
         reached = False

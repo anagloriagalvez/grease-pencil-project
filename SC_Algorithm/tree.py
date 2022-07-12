@@ -11,6 +11,10 @@ import math
 
 
 class Tree:
+    """
+    Class that implements a variation of the Space Colonization algorithm by Runions et al.,
+    based on The Coding Train code.
+    """
     tree_crown_radius = 0.2
     tree_crown_position = Vector((0, 0, 1.5))
     branch_length = 0.8
@@ -23,7 +27,7 @@ class Tree:
     original_leaves = []
     first_branch = None
 
-    max_iterations = 100
+    max_iterations = 100 # Prevents infinite loops
 
     # Drawing parameters
     max_thickness = 1
@@ -63,7 +67,7 @@ class Tree:
             leaf = Leaf(position=point)
             self.leaves.append(leaf)
 
-    def create_obloid_points_cloud(self, n_points, sphere_radius, cloud_centre):
+    def create_oblate_points_cloud(self, n_points, sphere_radius, cloud_centre):
         points = []
 
         for i in range(0, n_points):
@@ -90,7 +94,7 @@ class Tree:
             self.create_spherical_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
                                                cloud_centre=cloud_centre)
         elif type == "SPHERICAL":
-            self.create_obloid_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
+            self.create_oblate_points_cloud(n_points=n_points, sphere_radius=sphere_radius,
                                             cloud_centre=cloud_centre)
         elif type == "DOUBLE":
             n_points = int(n_points / 2)
@@ -104,7 +108,7 @@ class Tree:
 
     def create_trunk(self):
         self.first_branch = Branch(position=Vector((0, 0, 0)), direction=Vector((0, 0, 1)), length=self.branch_length,
-                      thickness=self.max_thickness)
+                      thickness=self.max_thickness, parent=None)
         self.branches.append(self.first_branch)
         current_branch = self.first_branch
 
