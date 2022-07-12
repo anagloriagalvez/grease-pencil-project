@@ -19,7 +19,7 @@ from tree import Tree
 
 def do_main():
     # reach_distance < branch_length < attraction_distance
-    my_tree = Tree(n_leaves=150, branch_length=0.02, max_dist=0.3, min_dist=0.02, tree_crown_radius=1,
+    my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02, tree_crown_radius=1,
                    tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
     my_tree.generate_tree()
 

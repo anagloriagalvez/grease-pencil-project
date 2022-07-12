@@ -27,8 +27,8 @@ class Tree:
     tree_crown_position = Vector((0, 0, 1.5))
     branch_length = 0.8
 
-    max_dist = 0
-    min_dist = 0
+    influence_radius = 0
+    kill_distance = 0
 
     branches = []
     leaves = []
@@ -40,15 +40,15 @@ class Tree:
     # Drawing parameters
     max_thickness = 1
 
-    def __init__(self, n_leaves, branch_length, max_dist, min_dist, tree_crown_radius, tree_crown_position,
+    def __init__(self, n_leaves, branch_length, influence_radius, kill_distance, tree_crown_radius, tree_crown_position,
                  max_iterations, max_thickness):
         """
         Creates a tree and initializes the leaves (attraction nodes) based on the tree type.
 
         :param int n_leaves: Number of "leaves" of the tree
         :param float branch_length: length of each tree branch
-        :param max_dist:
-        :param min_dist:
+        :param influence_radius:
+        :param kill_distance:
         :param float tree_crown_radius radius of the tree crown
         :param Vector tree_crown_position: position of the tree crown
         :param int max_iterations: maximum number of iterations allowed (avoids crashing)
@@ -56,8 +56,8 @@ class Tree:
         """
         self.control_branch_test = None
         self.branch_length = branch_length
-        self.max_dist = max_dist
-        self.min_dist = min_dist
+        self.influence_radius = influence_radius
+        self.kill_distance = kill_distance
         self.tree_crown_radius = tree_crown_radius
         self.tree_crown_position = tree_crown_position
         self.max_iterations = max_iterations
@@ -145,9 +145,9 @@ class Tree:
             cloud_centre_1 = Vector((-0.5, 0, 1.5))
             cloud_centre_2 = Vector((0.3, 0, 2))
 
-            self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius / 1.7,
+            self.create_oblate_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius / 1.2,
                                                cloud_centre=cloud_centre_1)
-            self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius / 2,
+            self.create_oblate_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius,
                                                cloud_centre=cloud_centre_2)
 
     # Tree trunk
@@ -177,7 +177,7 @@ class Tree:
         :param Branch branch: the branch used to check if it's close enough
         """
         for leaf in self.leaves:
-            if (leaf.pos - branch.pos).length < self.max_dist:
+            if (leaf.pos - branch.pos).length < self.influence_radius:
                 return True
 
     # Auxiliary method
@@ -221,7 +221,7 @@ class Tree:
                     direction = leaf.pos - _branch_end
                     distance = direction.length
 
-                    if distance <= self.min_dist:
+                    if distance <= self.kill_distance:
                         leaf.reached = True
                         closest_branch = None
                         break
