@@ -63,7 +63,7 @@ class Tree:
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_tree_crown(n_leaves=n_leaves, crown_type="DOUBLE", sphere_radius=self.tree_crown_radius,
+        self.create_tree_crown(n_leaves=n_leaves, crown_type="ROUNDED", sphere_radius=self.tree_crown_radius,
                                cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
@@ -137,7 +137,7 @@ class Tree:
         if crown_type == "ROUNDED":
             self.create_spherical_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius,
                                                cloud_centre=cloud_centre)
-        elif crown_type == "SPHERICAL":
+        elif crown_type == "ELLIPSE":
             self.create_oblate_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius,
                                             cloud_centre=cloud_centre)
         elif crown_type == "DOUBLE":
