@@ -210,7 +210,7 @@ class Tree:
         # Main growing algorithm
         n_iterations = 0
 
-        while len(self.leaves) > 0 or n_iterations < self.max_iterations:
+        while len(self.leaves) > 0 and n_iterations < self.max_iterations:
             for leaf in self.leaves:
                 closest_branch = None
                 closest_direction = None
