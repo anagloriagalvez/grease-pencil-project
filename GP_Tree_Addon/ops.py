@@ -56,7 +56,7 @@ def change_gp_layer_line_thickness(gp_layer=None, thickness=1):
     gp_layer.line_change = thickness
 
 
-def get_frame_gp_layer(gp_layer=None, frame_number=1):
+def get_frame_gp_layer(gp_layer=None, frame_number=0):
     for index, frame in enumerate(gp_layer.frames):
         if frame.frame_number == frame_number:
             return gp_layer.frames[index]
@@ -88,30 +88,16 @@ def draw_gp_line(gp_stroke=None, n_points=50):
         apply_custom_vertex_config_leaves(point=gp_point)
 
 
-def draw_tree_branch(gp_frame=None, p1=None, p2=None, n_points=50):
-    gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
-    gp_stroke.points.add(count=n_points + 2)
+# MAIN DRAWING METHOD
+def apply_custom_vertex_config_leaves(point=None):
+    point.vertex_color.data.vertex_color[0] = random.uniform(0.300, 0.350)  # Hue?
+    point.vertex_color.data.vertex_color[1] = 0.502  # Saturation?
+    point.vertex_color.data.vertex_color[2] = random.uniform(0.200, 0.300)  # Value?
+    point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0)  # Alpha
 
-    # Point1
-    gp_point1 = gp_stroke.points[0]
-    gp_point1.co = p1
-    apply_custom_vertex_config_leaves(point=gp_point1)
+    # point.pressure = random.uniform(50, 500)
+    # point.uv_rotation = random.uniform(-1.0, 1.0)
 
-    dir_vector = Vector(p2) - Vector(p1)
-    line_length = dir_vector.magnitude
-    point_dist = line_length / n_points
-
-    for i in range(1, n_points + 1):
-        gp_point = gp_stroke.points[i]
-        gp_point.co = Vector(p1) + dir_vector * point_dist * i
-        apply_custom_vertex_config_leaves(point=gp_point)
-
-    # Point2
-    gp_point2 = gp_stroke.points[-1]
-    gp_point2.co = p2
-    apply_custom_vertex_config_leaves(point=gp_point2)
-
-    return gp_stroke
 
 def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     # Init new stroke
@@ -126,22 +112,20 @@ def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     gp_stroke.points[1].pressure = thickness
     return gp_stroke
 
-# MAIN DRAWING METHOD
-def draw_tree(gp_stroke=None, gp_frame=None):
-    print("It crashes here2.0")
-    draw_gp_line(gp_stroke=gp_stroke, n_points=bpy.context.scene.gp_tree.line_length)
-    # tree(x=0, y=0, angle=90, n_levels=5, branch_length=bpy.context.scene.gp_tree.line_length, gp_frame=gp_frame)
 
+def draw_tree(tree, context):
+    gp_object = get_gp_object()
 
-def apply_custom_vertex_config_leaves(point=None):
-    point.vertex_color.data.vertex_color[0] = random.uniform(0.300, 0.350)  # Hue?
-    point.vertex_color.data.vertex_color[1] = 0.502  # Saturation?
-    point.vertex_color.data.vertex_color[2] = random.uniform(0.200, 0.300)  # Value?
-    point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0)  # Alpha
+    gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer")
 
-    point.pressure = random.uniform(50, 500)
-    point.uv_rotation = random.uniform(-1.0, 1.0)
+    gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=context.scene.frame_current)
 
+    for branch in tree.branches:
+        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
+
+def draw_leaves(tree):
+    for leaf in tree.original_leaves:
+        bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.025)
 
 # PROPS
 
@@ -183,10 +167,9 @@ class GPT_OT_generate_tree(bpy.types.Operator):
 
             my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
                            tree_crown_radius=1,
-                           tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
+                           tree_crown_height=1.5, max_iterations=150, max_thickness=80)
             my_tree.generate_tree()
 
-            print("TREE{}".format(my_tree.branches))
             gp_object = get_gp_object()
 
             gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer")
@@ -207,8 +190,8 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             # context.scene["_current_gp_material_name"] = gp_material.name_full  # Material name
             # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
 
-            for branch in my_tree.branches:
-                draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
+            draw_tree(my_tree, context)
+            draw_leaves(my_tree)
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))

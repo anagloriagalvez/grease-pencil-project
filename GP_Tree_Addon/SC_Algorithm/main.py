@@ -10,6 +10,7 @@
 
 import sys
 
+sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\GP_Tree_Addon\SC_Algorithm")
 sys.path.append(r"/GP_Tree_Addon/SC_Algorithm")
 import bpy
 from mathutils import Vector
@@ -20,7 +21,7 @@ from tree import Tree
 def do_main():
     # reach_distance < branch_length < attraction_distance
     my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02, tree_crown_radius=1,
-                   tree_crown_position=Vector((0, 0, 1.5)), max_iterations=50, max_thickness=80)
+                   tree_crown_height=1.5, max_iterations=150, max_thickness=80)
     my_tree.generate_tree()
 
     draw_tree(my_tree)
@@ -90,43 +91,17 @@ def init_grease_pencil(gpencil_obj_name='GPencil', gpencil_layer_name='GP_Layer'
     return gpencil_layer
 
 
-def draw_recursive(gp_frame, point_list, branch):
-    print("CHILDREN: {}".format(len(branch.children)))
-
-    point = [branch.pos, branch.thickness]
-    point_list.append(point)
-
-    if len(branch.children) == 0:
-        draw_line_n_points(gp_frame, points_list=point_list)
-        print("TRUE")
-        return
-
-    point = [branch.children[0].pos, branch.children[0].thickness]
-    point_list.append(point)
-
-    draw_recursive(gp_frame=gp_frame, point_list=point_list, branch=branch.children[0])
-
-    if len(branch.children) > 1:
-        print("HELLO")
-        print("--CHILDREN: {}".format(len(branch.children)))
-        for i in range(1, len(branch.children)):
-            new_point_list = []
-            point = [branch.pos, branch.thickness]
-            point_list.append(point)
-
-            draw_recursive(gp_frame=gp_frame, point_list=new_point_list, branch=branch.children[i])
-
 def draw_line_n_points(gp_frame, points_list):
     # Init new stroke
     gp_stroke = gp_frame.strokes.new()
     gp_stroke.display_mode = '3DSPACE'  # allows for editing
-
 
     # Define stroke geometry
     gp_stroke.points.add(count=len(points_list))
     for count, point in enumerate(points_list):
         gp_stroke.points[count].co = point[0]
         gp_stroke.points[count].pressure = point[1]
+
 
 def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     # Init new stroke

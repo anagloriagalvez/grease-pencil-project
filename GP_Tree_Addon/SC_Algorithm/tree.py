@@ -21,6 +21,7 @@ class Tree:
     """
     tree_crown_radius = 0.2
     tree_crown_position = Vector((0, 0, 1.5))
+    tree_crown_height = 1.0
     branch_length = 0.8
 
     influence_radius = 0
@@ -36,7 +37,7 @@ class Tree:
     # Drawing parameters
     max_thickness = 1
 
-    def __init__(self, n_leaves, branch_length, influence_radius, kill_distance, tree_crown_radius, tree_crown_position,
+    def __init__(self, n_leaves, branch_length, influence_radius, kill_distance, tree_crown_radius, tree_crown_height,
                  max_iterations, max_thickness):
         """
         Creates a tree and initializes the leaves (attraction nodes) based on the tree type.
@@ -46,7 +47,7 @@ class Tree:
         :param influence_radius:
         :param kill_distance:
         :param float tree_crown_radius radius of the tree crown
-        :param Vector tree_crown_position: position of the tree crown
+        :param Vector tree_crown_height: height of the tree crown
         :param int max_iterations: maximum number of iterations allowed (avoids crashing)
         :param float max_thickness: maximum thickness of the branches (the trunk thickness)
         """
@@ -55,11 +56,12 @@ class Tree:
         self.influence_radius = influence_radius
         self.kill_distance = kill_distance
         self.tree_crown_radius = tree_crown_radius
-        self.tree_crown_position = tree_crown_position
+        self.tree_crown_height = tree_crown_height
+        self.tree_crown_position = Vector((0, 0, tree_crown_height))
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_tree_crown(n_leaves=n_leaves, crown_type="ROUNDED", sphere_radius=self.tree_crown_radius,
+        self.create_tree_crown(n_leaves=n_leaves, crown_type="DOUBLE", sphere_radius=self.tree_crown_radius,
                                cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
@@ -75,7 +77,7 @@ class Tree:
         """
 
         for i in range(0, n_points):
-            radius = random.uniform(0.5, 1)
+            radius = random.uniform(0.4, 1)
             radius = radius * sphere_radius
 
             alpha = random.uniform(0, math.pi)
@@ -138,13 +140,14 @@ class Tree:
                                             cloud_centre=cloud_centre)
         elif crown_type == "DOUBLE":
             n_leaves = int(n_leaves / 2)
-            cloud_centre_1 = Vector((-0.5, 0, 1.5))
-            cloud_centre_2 = Vector((0.3, 0, 2))
+            cloud_centre_1 = self.tree_crown_position + Vector((-0.33 * self.tree_crown_height, 0, 0))
+            cloud_centre_2 = self.tree_crown_position + \
+                             Vector((0.2 * self.tree_crown_height, 0, 0.33 * self.tree_crown_height))
 
             self.create_oblate_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius / 1.2,
-                                               cloud_centre=cloud_centre_1)
+                                            cloud_centre=cloud_centre_1)
             self.create_oblate_points_cloud(n_points=n_leaves, sphere_radius=sphere_radius,
-                                               cloud_centre=cloud_centre_2)
+                                            cloud_centre=cloud_centre_2)
 
     # Tree trunk
     def create_trunk(self):
