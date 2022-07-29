@@ -30,6 +30,21 @@ def create_material_texture(material_name="New Test Material", color=(0.0, 0.0, 
     return gp_mat
 
 
+def create_material_color(material_name="New Test Material", color=(0.133615, 0.0622937, 0.0196455, 1), mode='LINE'):
+    # Create material
+    gp_mat = bpy.data.materials.new(material_name)
+    bpy.data.materials.create_gpencil_data(gp_mat)
+    gp_mat.grease_pencil.color = color
+    gp_mat.grease_pencil.show_stroke = True
+    gp_mat.grease_pencil.mode = mode
+    gp_mat.grease_pencil.stroke_style = 'SOLID'
+    gp_mat.grease_pencil.mix_stroke_factor = 1.0
+    gp_mat.grease_pencil.show_fill = False
+    print("CREATING MATERIAL")
+
+    return gp_mat
+
+
 def get_gp_material(name="New Test Material"):
     gp_material = bpy.data.materials[name]
     return gp_material
@@ -114,18 +129,24 @@ def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
 
 
 def draw_tree(tree, context):
+    gp_material = create_material_color()
+
     gp_object = get_gp_object()
 
     gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer")
 
     gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=context.scene.frame_current)
 
+    add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
+
     for branch in tree.branches:
         draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
+
 
 def draw_leaves(tree):
     for leaf in tree.original_leaves:
         bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.025)
+
 
 # PROPS
 
@@ -160,15 +181,16 @@ class GPT_OT_generate_tree(bpy.types.Operator):
 
     def execute(self, context):
         try:
-            # Add material with image
-            # text_gp_img = import_image(
-            #     image_path="{}/leaves_texture.png".format(os.getcwd()))
-            # gp_material = create_material_texture(text_img=text_gp_img)
-
+            # Execute the tree algorithm with the selected parameters
             my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
                            tree_crown_radius=1,
                            tree_crown_height=1.5, max_iterations=150, max_thickness=80)
             my_tree.generate_tree()
+
+            # Add material with image
+            # text_gp_img = import_image(
+            #     image_path="{}/leaves_texture.png".format(os.getcwd()))
+            # gp_material = create_material_texture(text_img=text_gp_img)
 
             gp_object = get_gp_object()
 
