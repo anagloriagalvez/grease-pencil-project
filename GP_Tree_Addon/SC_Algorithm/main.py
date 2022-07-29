@@ -10,7 +10,7 @@
 
 import sys
 
-sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm")
+sys.path.append(r"/GP_Tree_Addon/SC_Algorithm")
 import bpy
 from mathutils import Vector
 import random
@@ -30,8 +30,6 @@ def do_main():
 def draw_tree(tree):
     gp_layer = init_grease_pencil()
     gp_frame = gp_layer.frames.new(0)
-
-    #draw_recursive(gp_frame=gp_frame, point_list=[], branch=tree.first_branch)
 
     for branch in tree.branches:
         draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)

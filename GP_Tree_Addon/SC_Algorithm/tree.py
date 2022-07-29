@@ -7,13 +7,9 @@
 # Blender + Python adaptation by: Ana Gloria Gálvez Mellado
 # ana.gloria.galvez99@gmail.com
 # -----------------------------------------------------------
-import sys
-
-sys.path.append(r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\SC_Algorithm")
-
 from mathutils import Vector
-from branch import Branch
-from leaf import Leaf
+from GP_Tree_Addon.SC_Algorithm.branch import Branch
+from GP_Tree_Addon.SC_Algorithm.leaf import Leaf
 import random
 import math
 
