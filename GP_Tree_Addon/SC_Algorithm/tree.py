@@ -262,7 +262,7 @@ class Tree:
 
                     _new_branch = Branch(position=branch.pos + branch.length * branch.direction,
                                          direction=_new_branch_direction, parent=None,
-                                         length=branch.length, thickness=branch.thickness * 0.95)
+                                         length=branch.length, thickness=branch.thickness * 0.98)
 
                     branch.children.append(_new_branch)
                     _new_branches.append(_new_branch)

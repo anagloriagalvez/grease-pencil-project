@@ -1,5 +1,6 @@
 import bpy
 from mathutils import *
+import math
 from .SC_Algorithm.tree import Tree
 import random
 
@@ -89,19 +90,24 @@ def add_active_material_to_gp(gp_object=None, material_to_add=None):
     gp_object.data.materials.append(material_to_add)
     gp_object.active_material = material_to_add
 
+def generate_random_direction():
+    """
+    An aux method used to create a random direction (normalized vector)
+    :return:
+    Vector direction: random direction vector
+    """
+    alpha = random.uniform(0, math.pi)
+    theta = random.uniform(0, 2 * math.pi)
 
-# TODO: Think much more on that
-def draw_gp_line(gp_stroke=None, n_points=50):
-    # Define stroke geometry
-    gp_stroke.points.add(count=n_points)
+    direction = Vector((
+        math.cos(theta) * math.sin(alpha),
+        math.sin(theta) * math.sin(alpha),
+        math.cos(alpha)
+    ))
 
-    # Draw a 50points line with a random (but controlled) color value
-    for i in range(0, n_points):
-        gp_point = gp_stroke.points[i]
-        gp_point.co = Vector((0.0, 0.0, float(i / 32)))
+    direction.normalize()
 
-        apply_custom_vertex_config_leaves(point=gp_point)
-
+    return direction
 
 # MAIN DRAWING METHOD
 def apply_custom_vertex_config_leaves(point=None):
@@ -110,8 +116,7 @@ def apply_custom_vertex_config_leaves(point=None):
     point.vertex_color.data.vertex_color[2] = random.uniform(0.200, 0.300)  # Value?
     point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0)  # Alpha
 
-    # point.pressure = random.uniform(50, 500)
-    # point.uv_rotation = random.uniform(-1.0, 1.0)
+    point.uv_rotation = random.uniform(-1.0, 1.0)
 
 
 def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
@@ -124,6 +129,21 @@ def draw_line(gp_frame, p0: tuple, p1: tuple, thickness=1):
     gp_stroke.points[0].co = p0
     gp_stroke.points[0].pressure = thickness
     gp_stroke.points[1].co = p1
+    gp_stroke.points[1].pressure = thickness
+    return gp_stroke
+
+def draw_line_custom(gp_frame, p0: tuple, p1: tuple, thickness=1):
+    # Init new stroke
+    gp_stroke = gp_frame.strokes.new()
+    gp_stroke.display_mode = '3DSPACE'  # allows for editing
+
+    # Define stroke geometry
+    gp_stroke.points.add(count=2)
+    gp_stroke.points[0].co = p0
+    apply_custom_vertex_config_leaves(gp_stroke.points[0])
+    gp_stroke.points[0].pressure = thickness
+    gp_stroke.points[1].co = p1
+    apply_custom_vertex_config_leaves(gp_stroke.points[1])
     gp_stroke.points[1].pressure = thickness
     return gp_stroke
 
@@ -143,9 +163,26 @@ def draw_tree(tree, context):
         draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
 
 
-def draw_leaves(tree):
+def draw_leaves(tree, context):
+    # Add material with image
+    text_gp_img = import_image(
+        image_path=r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\GP_Tree_Addon\leaves_texture.png")
+    gp_material = create_material_texture(text_img=text_gp_img)
+
+    gp_object = get_gp_object(create_new=True)
+
+    gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer leaves")
+
+    gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=context.scene.frame_current)
+
+    #gp_object.active_material_index = 2
+    add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
+
     for leaf in tree.original_leaves:
-        bpy.ops.mesh.primitive_uv_sphere_add(location=leaf.pos, radius=0.025)
+        p0 = leaf.pos + generate_random_direction() * 0.01
+        p1 = leaf.pos + generate_random_direction() * 0.01
+
+        draw_line_custom(gp_frame, p0, p1, random.uniform(200, 300))
 
 
 # PROPS
@@ -184,36 +221,32 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             # Execute the tree algorithm with the selected parameters
             my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
                            tree_crown_radius=1,
-                           tree_crown_height=1.5, max_iterations=150, max_thickness=80)
+                           tree_crown_height=1.5, max_iterations=150, max_thickness=120)
             my_tree.generate_tree()
 
-            # Add material with image
-            # text_gp_img = import_image(
-            #     image_path="{}/leaves_texture.png".format(os.getcwd()))
-            # gp_material = create_material_texture(text_img=text_gp_img)
 
-            gp_object = get_gp_object()
+            # gp_object = get_gp_object()
 
-            gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer")
+            # gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Test layer")
 
             # Important! Otherwise, thickness = 0
             # change_gp_layer_line_thickness(gp_layer=gp_layer, thickness=100)
 
-            gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=context.scene.frame_current)
+            # gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=context.scene.frame_current)
 
-            gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
+            # gp_stroke = create_new_gp_stroke(gp_frame=gp_frame)
 
             # Add desired material to stroke
             # add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
 
             # Experimental! Add stroke to custom properties on scene
-            context.scene["_current_gp_name"] = gp_object.name_full
-            context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
+            # context.scene["_current_gp_name"] = gp_object.name_full
+            # context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
             # context.scene["_current_gp_material_name"] = gp_material.name_full  # Material name
             # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
 
             draw_tree(my_tree, context)
-            draw_leaves(my_tree)
+            draw_leaves(my_tree, context)
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))
