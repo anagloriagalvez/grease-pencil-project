@@ -204,6 +204,9 @@ class Tree:
         """
         Core of the Space Colonization algorithm.
         """
+        if self.leaves == 0:
+            print("THE TREE MUST HAVE AT LEAST 1 LEAVE")
+            return
 
         self.create_trunk()
         # Main growing algorithm
