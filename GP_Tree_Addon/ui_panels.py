@@ -11,8 +11,8 @@ class GPT_PT_mainPanel(bpy.types.Panel):
         layout = self.layout
         # layout.use_property_split = True
 
-        row = layout.row(align=True)
-        row.prop(context.scene.gp_tree, "line_length", text="Line length")
+        # row = layout.row(align=True)
+        # row.prop(context.scene.gp_tree, "line_length", text="Line length")
 
         row = layout.row(align=True)
         row.operator('gp_tree.generate_tree', text='Generate tree', icon='OUTLINER_DATA_GP_LAYER')
