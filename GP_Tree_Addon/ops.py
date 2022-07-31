@@ -44,7 +44,8 @@ def get_gp_object(name='GPencil', create_new=True):
         bpy.ops.object.gpencil_add(type="EMPTY")
         # Change name
         bpy.context.selected_objects[0].name = name
-    return bpy.context.scene.objects[name]
+        real_name = bpy.context.selected_objects[0].name
+    return bpy.context.scene.objects[real_name]
 
 
 def get_gp_layer(gp_object=None, layer_name="Layer"):
@@ -164,7 +165,7 @@ def apply_custom_vertex_config_leaves(point=None):
     point.vertex_color.data.vertex_color[2] = random.uniform(0.200, 0.300)  # Value
     point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0)  # Alpha
 
-    point.uv_rotation = random.uniform(-1.0, 1.0)
+    #point.uv_rotation = random.uniform(-1.0, 1.0)
 
 
 def draw_line(gp_frame=None, p0=Vector((0, 0, 0)), p1=Vector((0, 0, 0)), thickness=1):
@@ -336,7 +337,6 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             for collection in gp_leaves.users_collection:
                 collection.objects.unlink(gp_leaves)
 
-            print("COLLECTION: {}".format(tree_collection))
             tree_collection.objects.link(gp_tree)
             tree_collection.objects.link(gp_leaves)
 
