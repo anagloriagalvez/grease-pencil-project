@@ -17,7 +17,6 @@ class GPT_PT_mainPanel(bpy.types.Panel):
         row = box.row(align=True)
         row.scale_y = 1.4
         row.operator('gp_tree.overwrite_tree', text='Edit current', icon='GREASEPENCIL')
-        # row.separator_spacer()
         row.prop(context.scene.gp_tree, "collection_selector")
 
         row = box.row(align=True)

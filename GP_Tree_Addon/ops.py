@@ -354,9 +354,29 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
     bl_label = "Overwrite current GP tree"
     bl_description = "Overwrite procedural tree"
 
-    # @classmethod
-    # def poll(cls, context):
-    #     return True
+    @classmethod
+    def poll(cls, context):
+        collection = context.scene.gp_tree.collection_selector
+        if collection is None:
+            return False
+        if len(collection.all_objects) != 2:
+            return False
+        if not all('GPENCIL' in gp.type for gp in collection.all_objects):
+            return False
+        gp_leaves = [gp for gp in collection.all_objects if "Tree_leaves" in gp.name_full]
+        gp_trunk = [gp for gp in collection.all_objects if "Tree_trunk" in gp.name_full]
+
+        if len(gp_leaves) != 1:
+            return False
+        if len(gp_trunk) != 1:
+            return False
+        if "Leaves" not in gp_leaves[0].data.layers.keys():
+            return False
+        if "Trunk" not in gp_trunk[0].data.layers.keys():
+            return False
+
+        # If nothing is false, then true
+        return True
 
     def execute(self, context):
         try:
@@ -365,12 +385,6 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
                            tree_crown_radius=0.7,
                            tree_crown_height=1.5, max_iterations=150, max_thickness=120)
             my_tree.generate_tree()
-
-            # Experimental! Add stroke to custom properties on scene
-            # context.scene["_current_gp_name"] = gp_object.name_full
-            # context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
-            # context.scene["_current_gp_material_name"] = gp_material.name_full  # Material name
-            # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
 
             gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current)
             gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current)
