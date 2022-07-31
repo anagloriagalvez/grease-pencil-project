@@ -49,19 +49,20 @@ def get_gp_object(name='GPencil', create_new=True):
     return bpy.context.scene.objects[real_name]
 
 
-def get_gp_layer(gp_object=None, layer_name="Layer"):
+def get_gp_layer(gp_object=None, layer_name="Layer", clear_layer=False):
     """
     Create or get a Grease Pencil layer (inside GP object)
     :param gp_object: Reference to the gp object inside Blender
     :param str layer_name: Layer name
+    :param bool clear_layer: True if the layer should be cleared (empty)
     :return:
     grease pencil layer: Reference to the gp layer inside Blender
     """
-
-    # if clear_layer:
-    #     gpencil_layer.clear()
     if layer_name in gp_object.data.layers.keys():  # List of layer names
-        return gp_object.data.layers[layer_name]
+        gpencil_layer = gp_object.data.layers[layer_name]
+        if clear_layer:
+            gpencil_layer.clear()
+        return gpencil_layer
     return gp_object.data.layers.new(name=layer_name, set_active=True)
 
 
@@ -217,20 +218,26 @@ def draw_line_custom_leaves(gp_frame=None, p0=Vector((0, 0, 0)), p1=Vector((0, 0
     return gp_stroke
 
 
-def draw_tree(tree=None, frame=0):
+def draw_tree(tree=None, frame=0, overwrite=False, edit_gp_object=None):
     """
     For a given Space Colonization tree, go over all the branches and draw them with
     a brown material and different thickness.
     :param tree: Space Colonization tree object
     :param frame: Frame number
+    :param bool overwrite: True if the edit_gp_object must be overwritten
+                        False if a new gp_object must be created
+    :param edit_gp_object: gp_object to overwrite (just used if overwrite=True)
     :return:
     grease pencil object: Reference to the gp object inside Blender
     """
     gp_material = create_material_color(material_name="Trunk", color=(0.133615, 0.0622937, 0.0196455, 1), mode='LINE')
 
-    gp_object = get_gp_object(name="Tree_trunk", create_new=True)
+    if not overwrite:
+        gp_object = get_gp_object(name="Tree_trunk", create_new=True)
+    else:
+        gp_object = edit_gp_object
 
-    gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Trunk")
+    gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Trunk", clear_layer=overwrite)
 
     gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=frame)
 
@@ -242,12 +249,15 @@ def draw_tree(tree=None, frame=0):
     return gp_object
 
 
-def draw_leaves(tree=None, frame=0):
+def draw_leaves(tree=None, frame=0, overwrite=False, edit_gp_object=None):
     """
      For a given Space Colonization tree, go over all the leaves and draw them with
      a special leaf material and different thickness.
      :param tree: Space Colonization tree object
      :param frame: Frame number
+     :param bool overwrite: True if the edit_gp_object must be overwritten
+                            False if a new gp_object must be created
+     :param edit_gp_object: gp_object to overwrite (just used if overwrite=True)
      :return:
      grease pencil object: Reference to the gp object inside Blender
      """
@@ -263,9 +273,12 @@ def draw_leaves(tree=None, frame=0):
     gp_material = create_material_texture(material_name="Leaves", color=(0.0, 0.0, 0.0, 1.0), mode='DOTS',
                                           text_img=text_gp_img)
 
-    gp_object = get_gp_object(name="Tree_leaves", create_new=True)
+    if not overwrite:
+        gp_object = get_gp_object(name="Tree_leaves", create_new=True)
+    else:
+        gp_object = edit_gp_object
 
-    gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Leaves")
+    gp_layer = get_gp_layer(gp_object=gp_object, layer_name="Leaves", clear_layer=overwrite)
 
     gp_frame = get_frame_gp_layer(gp_layer=gp_layer, frame_number=frame)
 
@@ -285,11 +298,10 @@ def draw_leaves(tree=None, frame=0):
 
 class GPT_property_group(bpy.types.PropertyGroup):
     collection_selector: bpy.props.PointerProperty(
-            name="",
-            description="GP Tree collection.",
-            type=bpy.types.Collection
-            )
-
+        name="",
+        description="GP Tree collection.",
+        type=bpy.types.Collection
+    )
 
     # EXAMPLE PROPERTY
     line_length: bpy.props.IntProperty(
@@ -320,14 +332,8 @@ class GPT_OT_generate_tree(bpy.types.Operator):
                            tree_crown_height=1.5, max_iterations=150, max_thickness=120)
             my_tree.generate_tree()
 
-            # Experimental! Add stroke to custom properties on scene
-            # context.scene["_current_gp_name"] = gp_object.name_full
-            # context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
-            # context.scene["_current_gp_material_name"] = gp_material.name_full  # Material name
-            # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
-
-            gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current)
-            gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current)
+            gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current, overwrite=False, edit_gp_object=None)
+            gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current, overwrite=False, edit_gp_object=None)
 
             # Create a new Blender collection and add the GP objects to it
             tree_collection = bpy.data.collections.new("GP_Tree")
@@ -342,12 +348,15 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             tree_collection.objects.link(gp_tree)
             tree_collection.objects.link(gp_leaves)
 
+            context.scene.gp_tree.collection_selector = tree_collection
+
 
         except Exception as e:
             self.report({'ERROR'}, '{}'.format(e))
             return {"CANCELLED"}
 
         return {"FINISHED"}
+
 
 class GPT_OT_overwrite_tree(bpy.types.Operator):
     bl_idname = "gp_tree.overwrite_tree"
@@ -386,21 +395,13 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
                            tree_crown_height=1.5, max_iterations=150, max_thickness=120)
             my_tree.generate_tree()
 
-            gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current)
-            gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current)
+            # Get gp object from current collection
+            collection = context.scene.gp_tree.collection_selector
+            gp_obj_trunk = [gp for gp in collection.all_objects if "Tree_trunk" in gp.name_full][0]
+            gp_obj_leaves = [gp for gp in collection.all_objects if "Tree_leaves" in gp.name_full][0]
 
-            # Create a new Blender collection and add the GP objects to it
-            tree_collection = bpy.data.collections.new("GP_Tree")
-            bpy.context.scene.collection.children.link(tree_collection)
-
-            for collection in gp_tree.users_collection:
-                collection.objects.unlink(gp_tree)
-
-            for collection in gp_leaves.users_collection:
-                collection.objects.unlink(gp_leaves)
-
-            tree_collection.objects.link(gp_tree)
-            tree_collection.objects.link(gp_leaves)
+            gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current, overwrite=True, edit_gp_object=gp_obj_trunk)
+            gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current, overwrite=True, edit_gp_object=gp_obj_leaves)
 
 
         except Exception as e:
@@ -408,6 +409,7 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
             return {"CANCELLED"}
 
         return {"FINISHED"}
+
 
 # REGISTER
 
