@@ -10,12 +10,19 @@ class GPT_PT_mainPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         # layout.use_property_split = True
+        box = layout.box()
+        row = box.row(align=True)
+        row.label(text='Generate tree')
 
-        # row = layout.row(align=True)
-        # row.prop(context.scene.gp_tree, "line_length", text="Line length")
+        row = box.row(align=True)
+        row.scale_y = 1.4
+        row.operator('gp_tree.overwrite_tree', text='Edit current', icon='GREASEPENCIL')
+        # row.separator_spacer()
+        row.prop(context.scene.gp_tree, "collection_selector")
 
-        row = layout.row(align=True)
-        row.operator('gp_tree.generate_tree', text='Generate tree', icon='OUTLINER_DATA_GP_LAYER')
+        row = box.row(align=True)
+        row.scale_y = 1.4
+        row.operator('gp_tree.generate_tree', text='New tree', icon='OUTLINER_DATA_GP_LAYER')
 
 
 # REGISTER

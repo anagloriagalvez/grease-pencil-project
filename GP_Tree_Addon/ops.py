@@ -284,20 +284,20 @@ def draw_leaves(tree=None, frame=0):
 # PROPS
 
 class GPT_property_group(bpy.types.PropertyGroup):
+    collection_selector: bpy.props.PointerProperty(
+            name="",
+            description="GP Tree collection.",
+            type=bpy.types.Collection
+            )
+
+
+    # EXAMPLE PROPERTY
     line_length: bpy.props.IntProperty(
         name="Length",
         description="Set the line length",
         min=1,
         max=500,
         default=50
-    )
-
-    # EXAMPLE PROPERTY
-    contactsheet_x: bpy.props.IntProperty(
-        name="Resolution X",
-        default=1920,
-        min=100,
-        description="X resolution of contactsheet",
     )
 
 
@@ -349,12 +349,58 @@ class GPT_OT_generate_tree(bpy.types.Operator):
 
         return {"FINISHED"}
 
+class GPT_OT_overwrite_tree(bpy.types.Operator):
+    bl_idname = "gp_tree.overwrite_tree"
+    bl_label = "Overwrite current GP tree"
+    bl_description = "Overwrite procedural tree"
+
+    # @classmethod
+    # def poll(cls, context):
+    #     return True
+
+    def execute(self, context):
+        try:
+            # Execute the tree algorithm with the selected parameters
+            my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
+                           tree_crown_radius=0.7,
+                           tree_crown_height=1.5, max_iterations=150, max_thickness=120)
+            my_tree.generate_tree()
+
+            # Experimental! Add stroke to custom properties on scene
+            # context.scene["_current_gp_name"] = gp_object.name_full
+            # context.scene["_current_gp_layer_name"] = gp_layer.info  # Layer name
+            # context.scene["_current_gp_material_name"] = gp_material.name_full  # Material name
+            # context.scene["_current_gp_frame"] = bpy.context.scene.frame_current
+
+            gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current)
+            gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current)
+
+            # Create a new Blender collection and add the GP objects to it
+            tree_collection = bpy.data.collections.new("GP_Tree")
+            bpy.context.scene.collection.children.link(tree_collection)
+
+            for collection in gp_tree.users_collection:
+                collection.objects.unlink(gp_tree)
+
+            for collection in gp_leaves.users_collection:
+                collection.objects.unlink(gp_leaves)
+
+            tree_collection.objects.link(gp_tree)
+            tree_collection.objects.link(gp_leaves)
+
+
+        except Exception as e:
+            self.report({'ERROR'}, '{}'.format(e))
+            return {"CANCELLED"}
+
+        return {"FINISHED"}
 
 # REGISTER
 
 classes = [
     GPT_property_group,
-    GPT_OT_generate_tree
+    GPT_OT_generate_tree,
+    GPT_OT_overwrite_tree
 ]
 
 
