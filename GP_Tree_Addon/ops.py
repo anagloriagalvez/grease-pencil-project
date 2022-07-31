@@ -1,4 +1,5 @@
 import bpy
+import os
 from mathutils import *
 import math
 from .SC_Algorithm.tree import Tree
@@ -137,7 +138,6 @@ def create_material_color(material_name="New Color Material", color=(0.0, 0.0, 0
     gp_mat.grease_pencil.stroke_style = 'SOLID'
     gp_mat.grease_pencil.mix_stroke_factor = 1.0
     gp_mat.grease_pencil.show_fill = False
-    print("CREATING MATERIAL")
 
     return gp_mat
 
@@ -164,8 +164,6 @@ def apply_custom_vertex_config_leaves(point=None):
     point.vertex_color.data.vertex_color[1] = 0.502  # Saturation
     point.vertex_color.data.vertex_color[2] = random.uniform(0.200, 0.300)  # Value
     point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0)  # Alpha
-
-    #point.uv_rotation = random.uniform(-1.0, 1.0)
 
 
 def draw_line(gp_frame=None, p0=Vector((0, 0, 0)), p1=Vector((0, 0, 0)), thickness=1):
@@ -255,9 +253,12 @@ def draw_leaves(tree=None, frame=0):
      """
 
     # Add material with image
-    # TODO: RELATIVE IMPORT PATH
-    text_gp_img = import_image(
-        image_path=r"C:\Users\Ana Gloria\Desktop\TFG\grease-pencil-project\GP_Tree_Addon\leaves_texture.png")
+    # Get current addon path
+    script_file = os.path.realpath(__file__)
+    directory = os.path.dirname(script_file)
+    img_dir = "{}/{}".format(directory, "leaves_texture.png")
+
+    text_gp_img = import_image(image_path=img_dir)
 
     gp_material = create_material_texture(material_name="Leaves", color=(0.0, 0.0, 0.0, 1.0), mode='DOTS',
                                           text_img=text_gp_img)
@@ -328,6 +329,7 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             gp_tree = draw_tree(tree=my_tree, frame=context.scene.frame_current)
             gp_leaves = draw_leaves(tree=my_tree, frame=context.scene.frame_current)
 
+            # Create a new Blender collection and add the GP objects to it
             tree_collection = bpy.data.collections.new("GP_Tree")
             bpy.context.scene.collection.children.link(tree_collection)
 

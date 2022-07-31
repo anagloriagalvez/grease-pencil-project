@@ -61,7 +61,7 @@ class Tree:
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_tree_crown(n_leaves=n_leaves, crown_type="DOUBLE", sphere_radius=self.tree_crown_radius,
+        self.create_tree_crown(n_leaves=n_leaves, crown_type="ROUNDED", sphere_radius=self.tree_crown_radius,
                                cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
