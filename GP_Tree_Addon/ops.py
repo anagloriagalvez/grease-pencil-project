@@ -164,7 +164,7 @@ def apply_custom_vertex_config_leaves(point=None):
     point.vertex_color.data.vertex_color[0] = random.uniform(0.300, 0.350)  # Hue
     point.vertex_color.data.vertex_color[1] = 0.502  # Saturation
     point.vertex_color.data.vertex_color[2] = random.uniform(0.200, 0.300)  # Value
-    point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0)  # Alpha
+    point.vertex_color.data.vertex_color[3] = random.uniform(0.0, 1.0) # Mix factor
 
 
 def draw_line(gp_frame=None, p0=Vector((0, 0, 0)), p1=Vector((0, 0, 0)), thickness=1):
@@ -320,9 +320,11 @@ class GPT_OT_generate_tree(bpy.types.Operator):
     bl_label = "Generate procedural tree"
     bl_description = "Generate procedural tree"
 
-    # @classmethod
-    # def poll(cls, context):
-    #     return True
+    @classmethod
+    def poll(cls, context):
+        if context.mode != 'OBJECT':
+            return False
+        return True
 
     def execute(self, context):
         try:
@@ -365,6 +367,8 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        if context.mode != 'OBJECT':
+            return False
         collection = context.scene.gp_tree.collection_selector
         if collection is None:
             return False
