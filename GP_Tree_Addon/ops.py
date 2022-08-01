@@ -244,7 +244,7 @@ def draw_tree(tree=None, frame=0, overwrite=False, edit_gp_object=None):
     add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
 
     for branch in tree.branches:
-        draw_line(gp_frame, branch.pos, branch.pos + branch.direction * branch.length, branch.thickness)
+        draw_line(gp_frame=gp_frame, p0=branch.pos, p1=branch.pos + branch.direction * branch.length, thickness=branch.thickness)
 
     return gp_object
 
@@ -284,12 +284,12 @@ def draw_leaves(tree=None, frame=0, overwrite=False, edit_gp_object=None):
 
     add_active_material_to_gp(gp_object=gp_object, material_to_add=gp_material)
 
-    # Create 2 points per leave in order to draw a line
+    # Create 2 points per leaf in order to draw a line
     for leaf in tree.original_leaves:
         p0 = leaf.pos + generate_random_direction() * 0.01
         p1 = leaf.pos + generate_random_direction() * 0.01
 
-        draw_line_custom_leaves(gp_frame, p0, p1, random.uniform(200, 300))
+        draw_line_custom_leaves(gp_frame=gp_frame, p0=p0, p1=p1, thickness=random.uniform(200, 300))
 
     return gp_object
 
