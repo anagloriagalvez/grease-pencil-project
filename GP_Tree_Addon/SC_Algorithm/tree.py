@@ -1,8 +1,10 @@
 # -----------------------------------------------------------
 # Code based on The Coding Train implementation
 # Released under MIT License
-# Link to GitHub: shorturl.at/CFMQY
-# Link to webpage: shorturl.at/cWY16
+# Link to GitHub:
+# https://github.com/CodingTrain/Coding-Challenges/tree/main/018_SpaceColonizer3D/Processing/CC_018_SpaceColonizer3D
+# Link to webpage:
+# https://thecodingtrain.com/challenges/17-fractal-trees-space-colonization
 #
 # Blender + Python adaptation by: Ana Gloria Gálvez Mellado
 # ana.gloria.galvez99@gmail.com
