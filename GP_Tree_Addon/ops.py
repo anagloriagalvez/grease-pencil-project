@@ -230,7 +230,7 @@ def draw_tree(tree=None, frame=0, overwrite=False, edit_gp_object=None):
     :return:
     grease pencil object: Reference to the gp object inside Blender
     """
-    gp_material = create_material_color(material_name="Trunk", color=(0.133615, 0.0622937, 0.0196455, 1), mode='LINE')
+    gp_material = create_material_color(material_name="Trunk", color=(0.0581109, 0.0284933, 0.0100318, 1), mode='LINE')
 
     if not overwrite:
         gp_object = get_gp_object(name="Tree_trunk", create_new=True)
