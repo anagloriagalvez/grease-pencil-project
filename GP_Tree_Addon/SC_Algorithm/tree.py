@@ -63,7 +63,7 @@ class Tree:
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_tree_crown(n_leaves=n_leaves, crown_type="DOUBLE", sphere_radius=self.tree_crown_radius,
+        self.create_tree_crown(n_leaves=n_leaves, crown_type="ROUNDED", sphere_radius=self.tree_crown_radius,
                                cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
@@ -205,6 +205,9 @@ class Tree:
     def generate_tree(self):
         """
         Core of the Space Colonization algorithm.
+        :return:
+        True if the tree has been correctly generated
+        False if there have been some problem while creating the tree
         """
         if self.leaves == 0 or not self.leaves:
             return False
@@ -272,3 +275,5 @@ class Tree:
             self.branches.extend(_new_branches)
 
             n_iterations = n_iterations + 1
+
+        return True

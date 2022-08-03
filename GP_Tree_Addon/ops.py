@@ -329,7 +329,7 @@ class GPT_OT_generate_tree(bpy.types.Operator):
     def execute(self, context):
         try:
             # Execute the tree algorithm with the selected parameters
-            my_tree = Tree(n_leaves=0, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
+            my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
                            tree_crown_radius=0.7,
                            tree_crown_height=1.5, max_iterations=150, max_thickness=120)
             if not my_tree.generate_tree():
