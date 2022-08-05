@@ -44,8 +44,8 @@ def get_gp_object(name='GPencil', create_new=True):
     if name not in bpy.context.scene.objects or create_new:
         bpy.ops.object.gpencil_add(type="EMPTY")
         # Change name
-        bpy.context.selected_objects[0].name = name
-        real_name = bpy.context.selected_objects[0].name
+        bpy.context.object.name = name
+        real_name = bpy.context.object.name
     return bpy.context.scene.objects[real_name]
 
 
