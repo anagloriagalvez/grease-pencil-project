@@ -39,17 +39,21 @@ class Tree:
     # Drawing parameters
     max_thickness = 1
 
+    # Tree types
+    tree_types = ["ROUNDED", "ELLIPSE", "DOUBLE"]
+
     def __init__(self, n_leaves, branch_length, influence_radius, kill_distance, tree_crown_radius, tree_crown_height,
-                 max_iterations, max_thickness):
+                 tree_type, max_iterations, max_thickness):
         """
         Creates a tree and initializes the leaves (attraction nodes) based on the tree type.
 
         :param int n_leaves: Number of "leaves" of the tree
         :param float branch_length: length of each tree branch
-        :param influence_radius:
-        :param kill_distance:
-        :param float tree_crown_radius radius of the tree crown
+        :param influence_radius: distance needed for the trunk to start reaching the leaves
+        :param kill_distance: distance for a leaf to be considered "reached" by a branch
+        :param float tree_crown_radius: radius of the tree crown
         :param Vector tree_crown_height: height of the tree crown
+        :param str tree_type: tree crown type
         :param int max_iterations: maximum number of iterations allowed (avoids crashing)
         :param float max_thickness: maximum thickness of the branches (the trunk thickness)
         """
@@ -63,7 +67,10 @@ class Tree:
         self.max_iterations = max_iterations
         self.max_thickness = max_thickness
         self.branches = []
-        self.create_tree_crown(n_leaves=n_leaves, crown_type="DOUBLE", sphere_radius=self.tree_crown_radius,
+
+        if tree_type not in self.tree_types:
+            tree_type = self.tree_types[0]
+        self.create_tree_crown(n_leaves=n_leaves, crown_type=tree_type, sphere_radius=self.tree_crown_radius,
                                cloud_centre=self.tree_crown_position)
         self.original_leaves = self.leaves.copy()
 
@@ -182,6 +189,15 @@ class Tree:
                 return True
 
     # Auxiliary method
+    def get_tree_types(self):
+        """
+        Aux method used to return the possible tree types.
+
+        :return:
+        list of tree types
+        """
+        return self.tree_types
+
     def generate_random_direction(self):
         """
         An aux method used to create a random direction (normalized vector)
