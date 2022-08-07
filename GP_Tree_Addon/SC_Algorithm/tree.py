@@ -86,7 +86,7 @@ class Tree:
         """
 
         for i in range(0, n_points):
-            radius = random.uniform(0.4, 1)
+            radius = random.uniform(0.3, 0.7)
             radius = radius * sphere_radius
 
             alpha = random.uniform(0, math.pi)
@@ -172,7 +172,7 @@ class Tree:
         while not self.trunk_close_enough(current_branch):
             trunk = Branch(position=current_branch.pos + current_branch.direction * current_branch.length,
                            direction=current_branch.direction.copy(),
-                           parent=current_branch, length=self.branch_length, thickness=current_branch.thickness * 0.99)
+                           parent=current_branch, length=self.branch_length, thickness=current_branch.thickness * 0.97)
             current_branch.children.append(trunk)
             self.branches.append(trunk)
             current_branch = trunk
