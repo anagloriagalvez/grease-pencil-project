@@ -297,20 +297,61 @@ def draw_leaves(tree=None, frame=0, overwrite=False, edit_gp_object=None):
 # PROPS
 
 class GPT_property_group(bpy.types.PropertyGroup):
+    # Select the editable GP tree
     collection_selector: bpy.props.PointerProperty(
         name="",
-        description="GP Tree collection.",
+        description="GP Tree collection",
         type=bpy.types.Collection
     )
 
-    # EXAMPLE PROPERTY
-    line_length: bpy.props.IntProperty(
-        name="Length",
-        description="Set the line length",
-        min=1,
-        max=500,
-        default=50
+    # Tree appearance properties
+    tree_type: bpy.props.EnumProperty(
+        name="Tree type",
+        description="Tree crown shape.",
+        items=[
+            ("ROUNDED", "Rounded", "Rounded tree crown"),
+            ("ELLIPSE", "Ellipse", "Elliptical tree crown"),
+            ("DOUBLE", "Double", "Two elliptical tree crowns")
+        ],
+        default="ROUNDED"
     )
+
+    n_leaves: bpy.props.IntProperty(
+        name="Number of leaves",
+        description="Number of leaves",
+        min=1,
+        max=800,
+        default=150,
+        precision=1
+    )
+
+    tree_crown_radius: bpy.props.FloatProperty(
+        name="Tree crown radius",
+        description="Size of the tree crown",
+        min=0.1,
+        max=1,
+        default=0.5,
+        precision=2
+    )
+
+    trunk_length: bpy.props.FloatProperty(
+        name="Trunk length",
+        description="Length of the trunk",
+        min=0.1,
+        max=1,
+        default=0.5,
+        precision=2
+    )
+
+    max_thickness: bpy.props.FloatProperty(
+        name="Trunk thickness",
+        description="Trunk thickness value (maximum)",
+        min=0.1,
+        max=1,
+        default=0.5,
+        precision=2
+    )
+
 
 
 # OPERATORS
@@ -331,7 +372,7 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             # Execute the tree algorithm with the selected parameters
             my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
                            tree_crown_radius=0.7,
-                           tree_crown_height=1.5, max_iterations=150, max_thickness=120)
+                           tree_crown_height=1.5, tree_type="DOUBLE", max_iterations=150, max_thickness=120)
             if not my_tree.generate_tree():
                 self.report({'ERROR'}, '{}'.format("Error when creating the tree."))
                 return {"CANCELLED"}
@@ -398,7 +439,7 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
             # Execute the tree algorithm with the selected parameters
             my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
                            tree_crown_radius=0.7,
-                           tree_crown_height=1.5, max_iterations=150, max_thickness=120)
+                           tree_crown_height=1.5, tree_type="DOUBLE", max_iterations=150, max_thickness=120)
             my_tree.generate_tree()
 
             # Get gp object from current collection

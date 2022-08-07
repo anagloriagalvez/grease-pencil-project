@@ -189,15 +189,6 @@ class Tree:
                 return True
 
     # Auxiliary method
-    def get_tree_types(self):
-        """
-        Aux method used to return the possible tree types.
-
-        :return:
-        list of tree types
-        """
-        return self.tree_types
-
     def generate_random_direction(self):
         """
         An aux method used to create a random direction (normalized vector)

@@ -10,6 +10,29 @@ class GPT_PT_mainPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         # layout.use_property_split = True
+
+        # PROPERTIES
+        box = layout.box()
+        row = box.row(align=True)
+        row.label(text='Tree properties')
+
+        row = box.row(align=True)
+        row.prop(context.scene.gp_tree, "tree_type")
+
+        row = box.row(align=True)
+        row.prop(context.scene.gp_tree, "n_leaves")
+
+        row = box.row(align=True)
+        row.prop(context.scene.gp_tree, "tree_crown_radius")
+
+        row = box.row(align=True)
+        row.prop(context.scene.gp_tree, "trunk_length")
+
+        row = box.row(align=True)
+        row.prop(context.scene.gp_tree, "max_thickness")
+
+        # BUTTONS
+
         box = layout.box()
         row = box.row(align=True)
         row.label(text='Generate tree')
