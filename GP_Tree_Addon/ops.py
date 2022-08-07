@@ -320,16 +320,15 @@ class GPT_property_group(bpy.types.PropertyGroup):
         name="Number of leaves",
         description="Number of leaves",
         min=1,
-        max=800,
-        default=150,
-        precision=1
+        max=850,
+        default=150
     )
 
     tree_crown_radius: bpy.props.FloatProperty(
         name="Tree crown radius",
         description="Size of the tree crown",
         min=0.1,
-        max=1,
+        max=5,
         default=0.5,
         precision=2
     )
@@ -338,7 +337,7 @@ class GPT_property_group(bpy.types.PropertyGroup):
         name="Trunk length",
         description="Length of the trunk",
         min=0.1,
-        max=1,
+        max=5,
         default=0.5,
         precision=2
     )
@@ -347,7 +346,7 @@ class GPT_property_group(bpy.types.PropertyGroup):
         name="Trunk thickness",
         description="Trunk thickness value (maximum)",
         min=0.1,
-        max=1,
+        max=300,
         default=0.5,
         precision=2
     )
@@ -369,10 +368,12 @@ class GPT_OT_generate_tree(bpy.types.Operator):
 
     def execute(self, context):
         try:
+            ui_values = context.scene.gp_tree
+
             # Execute the tree algorithm with the selected parameters
-            my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
-                           tree_crown_radius=0.7,
-                           tree_crown_height=1.5, tree_type="DOUBLE", max_iterations=150, max_thickness=120)
+            my_tree = Tree(n_leaves=ui_values.n_leaves, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
+                           tree_crown_radius=ui_values.tree_crown_radius, tree_crown_height=ui_values.trunk_length,
+                           tree_type=ui_values.tree_type, max_iterations=150, max_thickness=ui_values.max_thickness)
             if not my_tree.generate_tree():
                 self.report({'ERROR'}, '{}'.format("Error when creating the tree."))
                 return {"CANCELLED"}
@@ -393,7 +394,7 @@ class GPT_OT_generate_tree(bpy.types.Operator):
             tree_collection.objects.link(gp_tree)
             tree_collection.objects.link(gp_leaves)
 
-            context.scene.gp_tree.collection_selector = tree_collection
+            ui_values.collection_selector = tree_collection
 
 
         except Exception as e:
@@ -436,14 +437,18 @@ class GPT_OT_overwrite_tree(bpy.types.Operator):
 
     def execute(self, context):
         try:
+            ui_values = context.scene.gp_tree
+
             # Execute the tree algorithm with the selected parameters
-            my_tree = Tree(n_leaves=150, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
-                           tree_crown_radius=0.7,
-                           tree_crown_height=1.5, tree_type="DOUBLE", max_iterations=150, max_thickness=120)
-            my_tree.generate_tree()
+            my_tree = Tree(n_leaves=ui_values.n_leaves, branch_length=0.02, influence_radius=0.7, kill_distance=0.02,
+                           tree_crown_radius=ui_values.tree_crown_radius, tree_crown_height=ui_values.trunk_length,
+                           tree_type=ui_values.tree_type, max_iterations=150, max_thickness=ui_values.max_thickness)
+            if not my_tree.generate_tree():
+                self.report({'ERROR'}, '{}'.format("Error when creating the tree."))
+                return {"CANCELLED"}
 
             # Get gp object from current collection
-            collection = context.scene.gp_tree.collection_selector
+            collection = ui_values.collection_selector
             gp_obj_trunk = [gp for gp in collection.all_objects if "Tree_trunk" in gp.name_full][0]
             gp_obj_leaves = [gp for gp in collection.all_objects if "Tree_leaves" in gp.name_full][0]
 
