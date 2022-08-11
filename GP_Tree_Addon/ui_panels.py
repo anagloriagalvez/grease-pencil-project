@@ -9,7 +9,6 @@ class GPT_PT_mainPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        # layout.use_property_split = True
 
         # PROPERTIES
         box = layout.box()

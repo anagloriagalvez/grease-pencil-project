@@ -2,7 +2,7 @@ bl_info = {
     "name": "Grease Pencil Procedural Tree",
     "description": "Generate Grease Pencil trees and modify them procedurally",
     "author": "Ana Gloria Gálvez Mellado",
-    "version": (1, 0, 0),
+    "version": (1, 2, 0),
     "blender": (3, 2, 0),
     "location": "Sidebar > Grease Pencil > Grease Pencil Tree",
     "warning": "",
