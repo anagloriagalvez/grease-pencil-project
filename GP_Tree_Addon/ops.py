@@ -297,6 +297,33 @@ def draw_leaves(tree=None, frame=0, overwrite=False, edit_gp_object=None):
 # PROPS
 
 class GPT_property_group(bpy.types.PropertyGroup):
+
+    # Update methods
+    def update_trunk_length(self, context):
+        """
+        Update method for the parameter trunk_length.
+        Ensures that trunk length value is never less than tree_crown_radius
+        :param context: bpy.context
+        """
+        trunk_length = context.scene.gp_tree.trunk_length
+        tree_crown_radius = context.scene.gp_tree.tree_crown_radius
+
+        if trunk_length < tree_crown_radius:
+            context.scene.gp_tree.trunk_length = tree_crown_radius
+
+    def update_tree_crown_radius(self, context):
+        """
+        Update method for the parameter tree_crown_radius.
+        Ensures that trunk length value is never less than tree_crown_radius
+        :param context: bpy.context
+        """
+        trunk_length = context.scene.gp_tree.trunk_length
+        tree_crown_radius = context.scene.gp_tree.tree_crown_radius
+
+        if trunk_length < tree_crown_radius:
+            context.scene.gp_tree.tree_crown_radius = trunk_length
+
+
     # Select the editable GP tree
     collection_selector: bpy.props.PointerProperty(
         name="",
@@ -329,9 +356,9 @@ class GPT_property_group(bpy.types.PropertyGroup):
         description="Size of the tree crown",
         min=0.1,
         max=2,
-        soft_max=1.7,
         default=0.7,
-        precision=2
+        precision=2,
+        update=update_tree_crown_radius
     )
 
     trunk_length: bpy.props.FloatProperty(
@@ -340,7 +367,8 @@ class GPT_property_group(bpy.types.PropertyGroup):
         min=0.1,
         max=2,
         default=1.6,
-        precision=2
+        precision=2,
+        update=update_trunk_length
     )
 
     max_thickness: bpy.props.IntProperty(
@@ -350,6 +378,7 @@ class GPT_property_group(bpy.types.PropertyGroup):
         max=100,
         default=50
     )
+
 
 
 
